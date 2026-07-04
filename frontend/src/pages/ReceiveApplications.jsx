@@ -7,8 +7,10 @@ import DocumentChecklist from "../components/applications/DocumentChecklist";
 import CivilServiceEligibilityForm from "../components/applications/CivilServiceEligibilityForm";
 import ApplicantEducationForm from "../components/applications/ApplicantEducationForm";
 import EqualOpportunityDeclaration from "../components/applications/EqualOpportunityDeclaration";
-// 1. IMPORT THE NEW WORK EXPERIENCE COMPONENT
 import WorkExperienceForm from "../components/applications/WorkExperienceForm"; 
+import ApplicantTrainingForm from "../components/applications/ApplicantTrainingForm";
+// A. NEW IMPORT: Bring in the HR Remarks Form Component
+import HRRemarksForm from "../components/applications/HRRemarksForm";
 import { postApplications } from "../api/ApplicationApi";
 
 export default function ReceiveApplications() {
@@ -52,7 +54,6 @@ export default function ReceiveApplications() {
       degree_course: "",
       honors_awards: ""
     },
-    // 2. ADDED: Work Experience initial state mapping your backend keys
     workExperienceData: {
       position_title: "",
       company_office: "",
@@ -60,7 +61,20 @@ export default function ReceiveApplications() {
       date_to: "",
       monthly_salary: "",
       appointment_status: "",
-      is_govt_service: null // Holds native boolean or null
+      is_govt_service: null 
+    },
+    trainingData: {
+      training_title: "",
+      date_from: "",
+      date_to: "",
+      hours_attended: "",
+      training_type: "",
+      conducted_by: ""
+    },
+    // B. NEW STATE: State node targeting the DB signature parameters
+    hrRemarksData: {
+      hr_remarks_notes: "",
+      application_status: ""
     }
   });
 
@@ -88,11 +102,19 @@ export default function ReceiveApplications() {
     setFormData((prev) => ({ ...prev, educationData: { ...prev.educationData, [name]: value } }));
   };
 
-  // 3. ADDED: State handler tailored for your work experience segment
   const handleWorkExperienceChange = (name, value) => {
+    setFormData((prev) => ({ ...prev, workExperienceData: { ...prev.workExperienceData, [name]: value } }));
+  };
+
+  const handleTrainingChange = (name, value) => {
+    setFormData((prev) => ({ ...prev, trainingData: { ...prev.trainingData, [name]: value } }));
+  };
+
+  // C. NEW STATE HANDLER: Updates HR specific properties
+  const handleHRRemarksChange = (name, value) => {
     setFormData((prev) => ({
       ...prev,
-      workExperienceData: { ...prev.workExperienceData, [name]: value }
+      hrRemarksData: { ...prev.hrRemarksData, [name]: value }
     }));
   };
 
@@ -123,12 +145,14 @@ export default function ReceiveApplications() {
       ...formData.equalOpportunityData,
       ...formData.eligibilityData,
       ...formData.educationData,
+      ...formData.workExperienceData,
+      ...formData.trainingData,
 
-      // 4. ADDED: Spreads the work experience fields onto the root payload object
-      ...formData.workExperienceData 
+      // D. NEW PAYLOAD INTEGRATION: Spreads HR remarks onto your unified submission object
+      ...formData.hrRemarksData 
     };
 
-    console.log("🚀 Submitting Full Payload with Work Experience:", payload);
+    console.log("🚀 Submitting Full Payload with HR Remarks:", payload);
 
     try {
       const response = await postApplications(payload);
@@ -159,15 +183,25 @@ export default function ReceiveApplications() {
         
         <ApplicantEducationForm data={formData.educationData} onChange={handleEducationChange} />
         
-        {/* 5. ADDED: Render Work Experience sub-form module */}
         <WorkExperienceForm 
           data={formData.workExperienceData} 
           onChange={handleWorkExperienceChange} 
         />
 
+        <ApplicantTrainingForm 
+          data={formData.trainingData} 
+          onChange={handleTrainingChange} 
+        />
+
         <DocumentChecklist documents={formData.documentData} onChange={handleDocumentChange} />
         <CivilServiceEligibilityForm data={formData.eligibilityData} onChange={handleEligibilityChange} />
         <EqualOpportunityDeclaration data={formData.equalOpportunityData} onChange={handleEqualOpportunityChange} />
+
+        {/* E. NEW FORM MODULE: Positioned near the bottom before submission trigger */}
+        <HRRemarksForm 
+          data={formData.hrRemarksData} 
+          onChange={handleHRRemarksChange} 
+        />
 
         <div className="flex justify-end pt-4">
           <button
