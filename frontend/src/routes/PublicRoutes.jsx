@@ -8,6 +8,8 @@ import SideBar from '../components/Sidebar';
 import PostVacancy from '../pages/PostVacancy';
 import VacancyPosting from '../pages/VacancyPosting';
 import ReceiveApplications from '../pages/ReceiveApplications';
+import AllApplication from '../pages/AllApplication';
+import ViewApplicants from '../pages/ViewApplicants';
 
 
 
@@ -48,6 +50,7 @@ export default function PublicRoutes() {
            ------------------------------------------------------------------ */}
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<Login />} />
+        
 
         {/* ------------------------------------------------------------------
             PROTECTED/APP ROUTES (Automatically wrapped in your design layout)
@@ -57,6 +60,8 @@ export default function PublicRoutes() {
         <Route path="/postVacancy" element={<PostVacancy />} />
         <Route path="/VacancyPosting" element={<VacancyPosting />} />
         <Route path="/receiveApplicant" element={<ReceiveApplications />} />
+        <Route path="/allApplications" element ={<AllApplication />} />
+        <Route path="/applicants/:id" element={<ViewApplicants />} />
 
         </Route>
 

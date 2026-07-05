@@ -37,139 +37,153 @@ function Applications({ formData, onChange }) {
         loadVacancies();
     }, []);
 
-    return (
-        <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+        return (
+        <div className="rounded-[24px] bg-white shadow-md overflow-hidden border border-gray-200">
 
             {/* Header */}
-            <div className="bg-[#183B74] text-white px-6 py-4 flex items-center gap-4">
-                <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center font-bold">
-                    1
-                </div>
-                <Briefcase size={18} />
-                <h2 className="text-lg font-semibold">
-                    Vacancy / Position Applied For
-                </h2>
+            <div className="bg-[#234C86] px-6 py-5 flex items-center gap-4">
+            <div className="w-9 h-5 rounded-full bg-white/15 flex items-center justify-center text-white font-semibold">
+                1
+            </div>
+
+            <Briefcase size={18} className="text-white" />
+
+            <h2 className="text-white font-semibold text-[28px] leading-none">
+                Vacancy / Position Applied For
+            </h2>
             </div>
 
             {/* Body */}
-            <div className="p-6 space-y-6">
+            <div className="p-6">
 
-                {/* Row 1 */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            {/* First Row */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-                    {/* Vacancy Dropdown */}
-                    <div className="md:col-span-2">
-                        <label className="block mb-2 font-medium text-gray-700">
-                            Select Vacancy Posting
-                            <span className="text-red-500"> *</span>
-                        </label>
+                {/* Vacancy */}
+                <div className="lg:col-span-2">
+                <label className="block text-[17px] font-semibold text-gray-800 mb-2">
+                    Select Vacancy Posting
+                    <span className="text-red-500"> *</span>
+                </label>
 
-                        <select
-                            value={form.vacancy_id}
-                            onChange={(e) => handleLocalChange('vacancy_id', e.target.value)}
-                            className={`w-full rounded-xl border px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white ${
-                                !form.vacancy_id ? "border-red-400 focus:ring-red-300" : "border-gray-300"
-                            }`}
+                <select
+                    value={form.vacancy_id}
+                    onChange={(e) =>
+                    handleLocalChange("vacancy_id", e.target.value)
+                    }
+                    className="w-full h-[50px] rounded-xl border border-gray-300 bg-[#F8FAFC] px-5 text-gray-600 text-[16px] outline-none focus:ring-2 focus:ring-blue-300"
+                >
+                    <option value="">
+                    -- Select Position / Vacancy --
+                    </option>
+
+                    {loading && (
+                    <option disabled>Loading...</option>
+                    )}
+
+                    {!loading &&
+                    vacancies.map((vacancy) => (
+                        <option
+                        key={vacancy.vacancy_id}
+                        value={vacancy.vacancy_id}
                         >
-                            {/* 1. Base placeholder option */}
-                            <option value="">-- Select Position / Vacancy --</option>
+                        {vacancy.position_title}
+                        </option>
+                    ))}
 
-                            {/* 2. Wrapped in a fragment container to explicitly group dynamic children */}
-                            <>
-                                {loading && (
-                                    <option value="" disabled>Loading...</option>
-                                )}
-
-                                {!loading && vacancies.length > 0 && (
-                                    vacancies.map((vacancy) => (
-                                        <option key={vacancy.vacancy_id ?? vacancy.id} value={vacancy.vacancy_id}>
-                                            {vacancy.position_title}
-                                        </option>
-                                    ))
-                                )}
-
-                                {!loading && vacancies.length === 0 && (
-                                    <option value="" disabled>No vacancies available</option>
-                                )}
-                            </>
-                        </select>
-
-                        {!form.vacancy_id && (
-                            <p className="text-red-500 text-sm mt-1">
-                                Please select a vacancy.
-                            </p>
-                        )}
-                    </div>
-
-                    {/* Date Input */}
-                    <div>
-                        <label className="block mb-2 font-medium text-gray-700">
-                            Date Received
-                            <span className="text-red-500"> *</span>
-                        </label>
-
-                        <div className="relative">
-                            <input
-                                type="date"
-                                value={form.dateReceived}
-                                onChange={(e) => handleLocalChange('dateReceived', e.target.value)}
-                                className="w-full rounded-xl border border-emerald-500 px-4 py-3 pr-20 focus:outline-none focus:ring-2 focus:ring-emerald-300"
-                            />
-                        </div>
-                    </div>
+                    {!loading &&
+                    vacancies.length === 0 && (
+                        <option disabled>
+                        No vacancies available
+                        </option>
+                    )}
+                </select>
                 </div>
 
-                {/* Row 2 */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                {/* Date */}
+                <div>
+                <label className="block text-[17px] font-semibold text-gray-800 mb-2">
+                    Date Received
+                    <span className="text-red-500"> *</span>
+                </label>
 
-                    {/* Time Input */}
-                    <div>
-                        <label className="block mb-2 font-medium text-gray-700">
-                            Time Received
-                            <span className="text-red-500"> *</span>
-                        </label>
+                <div className="relative">
+                    <input
+                    type="date"
+                    value={form.dateReceived}
+                    onChange={(e) =>
+                        handleLocalChange(
+                        "dateReceived",
+                        e.target.value
+                        )
+                    }
+                    className="w-full h-[50px] rounded-xl border border-gray-300 bg-[#F8FAFC] px-5 pr-12 text-[16px] outline-none focus:ring-2 focus:ring-blue-300"
+                    />
 
-                        <div className="relative">
-                            <input
-                                type="time" // Switched to time input type
-                                value={form.timeReceived}
-                                readOnly
-                                className="w-full rounded-xl border border-emerald-500 px-4 py-3 pr-20 bg-gray-50 focus:outline-none"
-                            />
-    
-                        </div>
-                    </div>
-
-                    {/* Received By */}
-                    <div>
-                        <label className="block mb-2 font-medium text-gray-700">
-                            Received By
-                        </label>
-                        <input
-                            type="text"
-                            value={form.receivedBy}
-                            readOnly
-                            className="w-full rounded-xl border border-gray-300 bg-gray-100 px-4 py-3 text-gray-600"
-                        />
-                    </div>
-
-                    {/* Submission Type */}
-                    <div>
-                        <label className="block mb-2 font-medium text-gray-700">
-                            Submission Type
-                        </label>
-                        <input
-                            type="text"
-                            value={form.submissionType}
-                            readOnly
-                            className="w-full rounded-xl border border-gray-300 bg-gray-100 px-4 py-3 text-gray-600"
-                        />
-                    </div>
-
+                    <CalendarDays
+                    size={18}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none"
+                    />
+                </div>
                 </div>
             </div>
+
+            {/* Second Row */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
+
+                {/* Time */}
+                <div>
+                <label className="block text-[17px] font-semibold text-gray-800 mb-2">
+                    Time Received
+                    <span className="text-red-500"> *</span>
+                </label>
+
+                <div className="relative">
+                    <input
+                    type="text"
+                    readOnly
+                    value={form.timeReceived}
+                    className="w-full h-[50px] rounded-xl border border-gray-300 bg-[#F8FAFC] px-5 pr-12 text-[16px]"
+                    />
+
+                    <Clock3
+                    size={18}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500"
+                    />
+                </div>
+                </div>
+
+                {/* Received By */}
+                <div>
+                <label className="block text-[17px] font-semibold text-gray-800 mb-2">
+                    Received By
+                </label>
+
+                <input
+                    type="text"
+                    readOnly
+                    value={form.receivedBy}
+                    className="w-full h-[50px] rounded-xl border border-gray-300 bg-[#F8FAFC] px-5 text-[16px]"
+                />
+                </div>
+
+                {/* Submission Type */}
+                <div>
+                <label className="block text-[17px] font-semibold text-gray-800 mb-2">
+                    Submission Type
+                </label>
+
+                <input
+                    type="text"
+                    readOnly
+                    value={form.submissionType}
+                    className="w-full h-[50px] rounded-xl border border-gray-300 bg-[#F8FAFC] px-5 text-[16px]"
+                />
+                </div>
+            </div>
+            </div>
         </div>
-    );
+        );
 }
 
 export default Applications;

@@ -42,13 +42,39 @@ export const postVacancy = async (req, res) => {
 
 export const getVacancy = async (req, res) => {
     try {
-        const vacancy = await pool.query(
-            'SELECT  vacancy_id, position_title, salary_grade, office_unit, no_of_slots, application_posted, application_deadline FROM vacancies'
-        );
+        const vacancy = await pool.query(`
+            SELECT 
+                vacancies.vacancy_id, 
+                vacancies.position_title, 
+                vacancies.salary_grade, 
+                vacancies.office_unit, 
+                vacancies.no_of_slots, 
+                vacancies.application_posted, 
+                vacancies.application_deadline,
+                vacancy_specific_qualifications.education_requirement,   
+                vacancy_specific_qualifications.training_requirement,    
+                vacancy_specific_qualifications.experience_requirement,  
+                vacancy_specific_qualifications.eligibility_requirement, 
+                COUNT(applicant_information.applicant_id) AS applicants_count
+            FROM vacancies
+            LEFT JOIN vacancy_specific_qualifications ON vacancies.vacancy_id = vacancy_specific_qualifications.vacancy_id
+            LEFT JOIN applicant_information ON vacancies.vacancy_id = applicant_information.vacancy_id
+            GROUP BY 
+                vacancies.vacancy_id,
+                vacancies.position_title,          
+                vacancies.salary_grade,
+                vacancies.office_unit,
+                vacancies.no_of_slots,
+                vacancies.application_posted,
+                vacancies.application_deadline,
+                vacancy_specific_qualifications.education_requirement,   
+                vacancy_specific_qualifications.training_requirement,    
+                vacancy_specific_qualifications.experience_requirement,  
+                vacancy_specific_qualifications.eligibility_requirement
+        `);
 
         return res.status(200).json(vacancy.rows);
     } 
-  
     catch (err) {
         console.error(err.message);
         return res.status(500).json({ error: 'ERROR FETCHING DATA' });

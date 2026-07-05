@@ -22,7 +22,8 @@ export default function HRRemarksForm({ data, onChange }) {
             className="p-2 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="">-- Select Status --</option>
-            <option value="Pending Review">Initial Screening</option>
+            {/* CHANGE THIS VALUE TO "Initial Screening" */}
+            <option value="Initial Screening">Initial Screening</option>
             <option value="Qualified">Qualified</option>
             <option value="Disqualified">Disqualified</option>
           </select>

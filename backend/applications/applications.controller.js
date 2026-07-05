@@ -17,7 +17,9 @@ export const getFullApplicants = async (req, res) => {
     const query = `
         SELECT 
             -- 1. Job Applications
-            vacancy_id,
+            job_applications.vacancy_id,
+            vacancies.position_title, -- Added position_title from vacancies table
+            vacancies.office_unit,
             date_received,
             time_received,
             received_by,
@@ -25,6 +27,7 @@ export const getFullApplicants = async (req, res) => {
             application_status,
 
             -- 2. Applicant Information
+            applicant_information.applicant_id,
             first_name,
             middle_name,
             last_name,
@@ -74,7 +77,6 @@ export const getFullApplicants = async (req, res) => {
             honors_awards,
 
             -- 7. Applicant Work Experience
-            position_title,
             company_office,
             work_experience.date_from AS experience_date_from,
             work_experience.date_to AS experience_date_to,
@@ -94,6 +96,7 @@ export const getFullApplicants = async (req, res) => {
             hr_remarks_notes
 
         FROM job_applications
+        LEFT JOIN vacancies ON job_applications.vacancy_id = vacancies.vacancy_id
         LEFT JOIN applicant_information ON job_applications.job_applications_id = applicant_information.job_applications_id
         LEFT JOIN equal_opportunity_declarations ON applicant_information.applicant_id = equal_opportunity_declarations.applicant_id
         LEFT JOIN civil_service_eligibility ON applicant_information.applicant_id = civil_service_eligibility.applicant_id
