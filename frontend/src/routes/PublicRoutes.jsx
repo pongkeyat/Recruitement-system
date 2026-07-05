@@ -10,7 +10,8 @@ import VacancyPosting from '../pages/VacancyPosting';
 import ReceiveApplications from '../pages/ReceiveApplications';
 import AllApplication from '../pages/AllApplication';
 import ViewApplicants from '../pages/ViewApplicants';
-
+import InitialScreening from '../pages/InitialScreening';
+import ApplicantsInitialScreening from '../pages/ApplicantsInitialScreening';
 
 
 function AppLayout({ userToken }) {
@@ -62,6 +63,8 @@ export default function PublicRoutes() {
         <Route path="/receiveApplicant" element={<ReceiveApplications />} />
         <Route path="/allApplications" element ={<AllApplication />} />
         <Route path="/applicants/:id" element={<ViewApplicants />} />
+        <Route path="/initialScreening" element={<InitialScreening />} />
+        <Route path="/initialScreening/:id" element={<ApplicantsInitialScreening />} />
 
         </Route>
 

@@ -9,7 +9,10 @@ import {
   ClipboardCheck, 
   UserCheck, 
   UserX,
-  LogOut
+  LogOut,
+  UserRoundCheck,
+  UserRoundX,
+
 } from 'lucide-react';
 
 export default function SideBar() {
@@ -35,6 +38,14 @@ export default function SideBar() {
       items: [
         { label: "Receive Application", to: "/receiveApplicant", icon: FolderDown },
         { label: "All Applications", to: "/allApplications", icon: FileText },
+      ]
+    },
+     {
+      title: "SCREENING",
+      items: [
+        { label: "Initial Screening", to: "/initialScreening", icon: ClipboardCheck },
+        { label: "Qualified", to: "/Qualified", icon: UserRoundCheck },
+        { label: "Disqualified", to: "/Disqualified", icon: UserRoundX },
       ]
     },
 

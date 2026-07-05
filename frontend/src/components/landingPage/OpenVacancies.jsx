@@ -12,10 +12,8 @@ export default function OpenVacancies({ searchTerm = "", setSearchTerm }) {
     const fetchVacanciesData = async () => {
       try {
         setLoading(true);
-        // Calls your API function that queries the database
         const data = await getVacancies();
         
-        // Map the database columns cleanly to your component's keys
         const mappedJobs = data.map((job) => ({
           id: job.vacancy_id,
           vacancyCode: `VCY-${job.vacancy_id}`, 
@@ -27,9 +25,11 @@ export default function OpenVacancies({ searchTerm = "", setSearchTerm }) {
           experience: job.experience_requirement || "None Required",
           eligibility: job.eligibility_requirement || "None Required",
           slots: job.no_of_slots || 1,
-          applicants: parseInt(job.applicants_count) || 0, 
+          applicants: parseInt(job.applicants_count) || 0,
+          status: job.application_status || "No applications yet",
           postingDate: job.application_posted,
           deadline: job.application_deadline,
+          remarksText: job.remark_text || "No additional instructions provided.",
         }));
 
         setJobs(mappedJobs);
@@ -52,6 +52,12 @@ export default function OpenVacancies({ searchTerm = "", setSearchTerm }) {
       job.vacancyCode?.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesOffice && matchesSearch;
   });
+
+  // Helper utility to check if a job is still open or expired
+  const isJobOpen = (deadlineDate) => {
+    if (!deadlineDate) return false;
+    return new Date(deadlineDate) >= new Date();
+  };
 
   const ViewIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4 inline-block mr-1.5 align-text-bottom">
@@ -150,8 +156,16 @@ export default function OpenVacancies({ searchTerm = "", setSearchTerm }) {
 
               <div className="p-4 pt-0">
                 <div className="flex justify-between items-center text-xs mb-3 border-t pt-3">
-                  <span className="bg-red-50 text-red-600 px-2.5 py-1 rounded-full font-medium">Deadline Passed</span>
-                  <span className="text-gray-400 text-right">{job.slots} Slot(s)<br className="sm:hidden"/> • {job.applicants} Applicant(s)</span>
+                  {/* Dynamic Status Badge Indicator */}
+                  {isJobOpen(job.deadline) ? (
+                    <span className="bg-green-50 text-green-600 px-2.5 py-1 rounded-full font-medium">Open / Active</span>
+                  ) : (
+                    <span className="bg-red-50 text-red-600 px-2.5 py-1 rounded-full font-medium">Deadline Passed</span>
+                  )}
+                  <span className="text-gray-400 text-right">
+                    {job.slots} Slot(s)<br className="sm:hidden"/> • {job.applicants} Applicant(s)
+                    <br />Status: {job.status}
+                  </span>
                 </div>
 
                 <button
@@ -197,7 +211,18 @@ export default function OpenVacancies({ searchTerm = "", setSearchTerm }) {
                     <div className="grid grid-cols-3"><span className="text-gray-400">Office Unit:</span><span className="col-span-2 font-bold text-gray-900">{selectedJob.office}</span></div>
                     <div className="grid grid-cols-3"><span className="text-gray-400">No. of Slots:</span><span className="col-span-2 font-medium text-gray-900">{selectedJob.slots}</span></div>
                     <div className="grid grid-cols-3"><span className="text-gray-400">Posting Date:</span><span className="col-span-2 font-medium text-gray-600">{selectedJob.postingDate}</span></div>
-                    <div className="grid grid-cols-3"><span className="text-gray-400">Deadline:</span><span className="col-span-2 text-red-500 font-semibold">{selectedJob.deadline} <span className="text-xs font-normal text-red-400">(Expired)</span></span></div>
+                    
+                    <div className="grid grid-cols-3">
+                      <span className="text-gray-400">Deadline:</span>
+                      <span className="col-span-2 font-semibold">
+                        {/* Dynamic Status Indicator inside the Modal info list */}
+                        {isJobOpen(selectedJob.deadline) ? (
+                          <span className="text-green-600">{selectedJob.deadline} <span className="text-xs font-normal text-green-500">(Active)</span></span>
+                        ) : (
+                          <span className="text-red-500">{selectedJob.deadline} <span className="text-xs font-normal text-red-400">(Expired)</span></span>
+                        )}
+                      </span>
+                    </div>
                   </div>
                 </div>
 
@@ -229,7 +254,8 @@ export default function OpenVacancies({ searchTerm = "", setSearchTerm }) {
               <div className="mt-6 bg-amber-50 border border-amber-200 rounded-lg p-4 flex items-start gap-2.5 text-sm text-amber-900">
                 <span className="bg-amber-700 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">i</span>
                 <p>
-                  <strong className="text-amber-900 font-bold">How to Apply:</strong> Submit your application documents <strong className="font-bold">personally (walk-in)</strong> at the <strong className="font-bold">HR Office, DEPARTMENT OF EDUCATION REGION 1</strong> on or before <strong className="font-bold">{selectedJob.deadline}</strong>.
+                  <strong className="text-amber-900 font-bold">Remarks: </strong>
+                  {selectedJob.remarksText || "No additional instructions provided."}
                 </p>
               </div>
             </div>
@@ -252,5 +278,4 @@ export default function OpenVacancies({ searchTerm = "", setSearchTerm }) {
       )}
     </div>
   );
-};
-
+}

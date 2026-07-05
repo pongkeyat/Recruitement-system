@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const POST_REMARKS = import.meta.env.VITE_REMARKS
+const POST_REMARKS = import.meta.env.VITE_REMARKS_POST
 
 export const postRemarks = async (remarks_form) => {
     const res = await axios.post(POST_REMARKS, remarks_form)

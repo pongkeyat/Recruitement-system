@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const POST_QUALIFICATIONS = import.meta.env.VITE_QUALIFICATIONS
+const POST_QUALIFICATIONS = import.meta.env.VITE_QUALIFICATIONS_POST
 
 export const postQualifications = async (qualifications_form) => {
     const res = await axios.post(POST_QUALIFICATIONS, qualifications_form)

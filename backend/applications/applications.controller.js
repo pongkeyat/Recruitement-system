@@ -24,7 +24,7 @@ export const getFullApplicants = async (req, res) => {
             time_received,
             received_by,
             submission_type,
-            application_status,
+            COALESCE(hr_remarks_final_notes.application_status, 'Initial Screening') AS application_status,
 
             -- 2. Applicant Information
             applicant_information.applicant_id,
@@ -185,5 +185,122 @@ export const postFullApplication = async (req, res) => {
         return res.status(500).json({ error: 'Internal server error processing application.' });
     } finally {
         client.release();
+    }
+};
+
+
+export const getApplicantById = async (req, res) => {
+    // Extract the ID from the request parameters
+    const { id } = req.params;
+
+    const query = `
+        SELECT 
+            -- 1. Job Applications
+            job_applications.vacancy_id,
+            vacancies.position_title,
+            vacancies.office_unit,
+            date_received,
+            time_received,
+            received_by,
+            submission_type,
+            COALESCE(hr_remarks_final_notes.application_status, 'Initial Screening') AS application_status,
+
+            -- 2. Applicant Information
+            applicant_information.applicant_id,
+            first_name,
+            middle_name,
+            last_name,
+            suffix,
+            sex,
+            date_of_birth,
+            civil_status,
+            contact_number,
+            email_address,
+            residential_address,
+
+            -- 3. Equal Opportunity Declarations
+            is_pwd,
+            is_solo_parent,
+            is_indigenous_person,
+
+            -- 4. Civil Service Eligibility
+            eligibility_type,
+            rating,
+            date_of_exam,
+            place_of_exam,
+            license_number,
+
+            -- 5. Upload Documents
+            has_application_letter,
+            has_birth_certificate,
+            has_certificate_of_employment,
+            has_civil_service_eligibility_cert,
+            has_diploma,
+            has_medical_certificate,
+            has_nbi_clearance,
+            has_performance_rating,
+            has_personal_data_sheet,
+            has_tin_id_or_verification,
+            has_training_certificates,
+            has_transcript_of_records,
+            has_voter_id_or_comelec_cert,
+            has_cert_of_outstanding_accomplishments,
+            has_marriage_certificate_psa,
+            has_oath_of_office,
+            has_service_record,
+
+            -- 6. Applicant Education
+            education_level,
+            school_name,
+            degree_course,
+            honors_awards,
+
+            -- 7. Applicant Work Experience
+            company_office,
+            work_experience.date_from AS experience_date_from,
+            work_experience.date_to AS experience_date_to,
+            monthly_salary,
+            appointment_status,
+            is_govt_service,
+
+            -- 8. Applicants Training
+            training_title,
+            relevant_trainings.date_from AS training_date_from,
+            relevant_trainings.date_to AS training_date_to,
+            hours_attended,
+            training_type,
+            conducted_by,
+
+            -- 9. HR Remarks
+            hr_remarks_notes
+
+        FROM job_applications
+        LEFT JOIN vacancies ON job_applications.vacancy_id = vacancies.vacancy_id
+        LEFT JOIN applicant_information ON job_applications.job_applications_id = applicant_information.job_applications_id
+        LEFT JOIN equal_opportunity_declarations ON applicant_information.applicant_id = equal_opportunity_declarations.applicant_id
+        LEFT JOIN civil_service_eligibility ON applicant_information.applicant_id = civil_service_eligibility.applicant_id
+        LEFT JOIN applicant_documents ON applicant_information.applicant_id = applicant_documents.applicant_id
+        LEFT JOIN education ON applicant_information.applicant_id = education.applicant_id
+        LEFT JOIN work_experience ON applicant_information.applicant_id = work_experience.applicant_id
+        LEFT JOIN relevant_trainings ON applicant_information.applicant_id = relevant_trainings.applicant_id
+        LEFT JOIN hr_remarks_final_notes ON applicant_information.applicant_id = hr_remarks_final_notes.applicant_id
+        WHERE applicant_information.applicant_id = $1;
+    `;
+
+    try {
+        // Use parameterized query to prevent SQL Injection
+        const result = await pool.query(query, [id]);
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ success: false, message: 'Applicant not found.' });
+        }
+
+        return res.status(200).json({
+            success: true,
+            data: result.rows[0] // Return the single object
+        });
+    } catch (error) {
+        console.error('Fetch applicant failure:', error);
+        return res.status(500).json({ error: 'Internal server error fetching applicant profile.' });
     }
 };

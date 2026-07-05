@@ -4,6 +4,7 @@ import Footer from '../components/landingPage/Footer';
 import HeroContent from '../components/landingPage/HeroContext';
 import OpenVacancies from '../components/landingPage/OpenVacancies'; // Imported your dynamic component
 
+
 export default function LandingPage() {
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -25,6 +26,7 @@ export default function LandingPage() {
           
           {/* OpenVacancies component receiving search state links */}
           <OpenVacancies searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
+
 
         </div>
       </main>
