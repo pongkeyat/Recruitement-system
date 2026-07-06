@@ -180,6 +180,9 @@ export default function ReceiveApplications() {
 
         <Applications formData={formData.applicationData} onChange={handleApplicationChange} />
         <ApplicantForm formData={formData.applicantData} onChange={handleApplicantChange} />
+        <CivilServiceEligibilityForm data={formData.eligibilityData} onChange={handleEligibilityChange} />
+        <EqualOpportunityDeclaration data={formData.equalOpportunityData} onChange={handleEqualOpportunityChange} />
+        <DocumentChecklist documents={formData.documentData} onChange={handleDocumentChange} />
         
         <ApplicantEducationForm data={formData.educationData} onChange={handleEducationChange} />
         
@@ -193,9 +196,8 @@ export default function ReceiveApplications() {
           onChange={handleTrainingChange} 
         />
 
-        <DocumentChecklist documents={formData.documentData} onChange={handleDocumentChange} />
-        <CivilServiceEligibilityForm data={formData.eligibilityData} onChange={handleEligibilityChange} />
-        <EqualOpportunityDeclaration data={formData.equalOpportunityData} onChange={handleEqualOpportunityChange} />
+      
+
 
         {/* E. NEW FORM MODULE: Positioned near the bottom before submission trigger */}
         <HRRemarksForm 

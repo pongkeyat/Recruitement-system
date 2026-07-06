@@ -8,7 +8,8 @@ import { insertApplicantsEducation } from "./services/applicantEducation.service
 import { insertApplicantsWorkExperience } from "./services/applicantWorkExpercience.services.js";
 import { insertApplicantsTraining } from "./services/applicantsTraining.services.js";
 import { insertHRRemarks } from "./services/hr_remarks.services.js";
-
+import { sendApplicationReceivedEmail } from "./services/email.services.js";
+import { insertNotification } from "./services/notification.services.js";
 // ==========================================
 // GET ALL FULL APPLICANTS DATA
 // ==========================================
@@ -165,6 +166,34 @@ export const postFullApplication = async (req, res) => {
         const hr_remarks = await insertHRRemarks(client, generatedApplicantId, req.body);
 
         await client.query('COMMIT'); 
+
+        await sendApplicationReceivedEmail(
+
+            email_address,
+
+            first_name,
+
+            last_name
+
+        );
+
+        await insertNotification(
+
+            client,
+
+            generatedJobId,
+
+            email_address,
+
+            "Application Received",
+
+            "Your application has been successfully received.",
+
+            "Sent",
+
+            "APPLICATION_RECEIVED"
+
+        );
 
         return res.status(201).json({ 
             message: 'Application bundle saved successfully!', 

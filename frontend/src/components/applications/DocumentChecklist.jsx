@@ -52,32 +52,48 @@ export default function DocumentChecklist({ documents, onChange }) {
   };
 
   return (
-    <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm space-y-6">
-      <div>
-        <h2 className="text-xl font-bold text-gray-900">Document Checklist</h2>
-        <p className="text-sm text-gray-500">Track and verify all submitted physical or digital documents.</p>
+    <div className="bg-white rounded-3xl border border-gray-200 shadow-sm overflow-hidden font-sans">
+      {/* Header Banner Section */}
+      <div className="bg-[#1e4a8a] p-5 pb-4 text-white flex flex-col gap-2">
+        <div className="flex items-center gap-3">
+          {/* Section Number Badge */}
+          <span className="flex items-center justify-center bg-white/20 text-white font-semibold text-sm w-6 h-6 rounded-full">
+            3
+          </span>
+          {/* Header Icon */}
+          <svg className="w-5 h-5 text-white/90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <h2 className="text-xl font-medium tracking-wide">Document Checklist</h2>
+        </div>
+      </div>
+      
+      {/* Subheader / Instruction Bar */}
+      <div className="bg-[#163664] px-5 py-2 text-white/90 text-sm border-t border-white/10">
+        Track and verify all submitted physical or digital documents.
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {/* Grid Content Background */}
+      <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6 bg-[#fcfdfd]">
         {Object.entries(categories).map(([categoryName, keys]) => (
-          <div key={categoryName} className="space-y-3 bg-gray-50 p-4 rounded-xl border border-gray-100">
-            <h3 className="font-semibold text-sm text-blue-600 uppercase tracking-wider">
+          <div key={categoryName} className="space-y-3 bg-[#f8fafc] p-5 rounded-2xl border border-gray-200/60 shadow-sm">
+            <h3 className="font-semibold text-xs text-[#1e4a8a] uppercase tracking-wider">
               {categoryName}
             </h3>
             
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               {keys.map((key) => (
                 <label 
                   key={key} 
-                  className="flex items-start p-2 rounded-lg hover:bg-white transition-colors cursor-pointer select-none border border-transparent hover:border-gray-200"
+                  className="flex items-center p-2.5 rounded-xl hover:bg-white transition-all cursor-pointer select-none border border-transparent hover:border-gray-200 hover:shadow-sm"
                 >
                   <input
                     type="checkbox"
                     checked={documents[key] || false}
                     onChange={(e) => onChange(key, e.target.checked)}
-                    className="w-4 h-4 mt-0.5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                    className="w-4 h-4 text-[#1e4a8a] border-gray-300 rounded focus:ring-[#1e4a8a] cursor-pointer"
                   />
-                  <span className="ml-3 text-sm font-medium text-gray-700">
+                  <span className="ml-3 text-[14px] font-medium text-gray-700">
                     {documentLabels[key]}
                   </span>
                 </label>
