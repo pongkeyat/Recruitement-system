@@ -1,107 +1,110 @@
 import React from 'react';
 
 export default function ApplicantEducationForm({ data, onChange }) {
-  
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    onChange(name, value);
+  const educationList = data.educationList || [
+    { level: '', school_name: '', degree_course: '', from_year: '', to_year: '', honors_awards: '' }
+  ];
+
+  const handleInputChange = (index, fieldName, value) => {
+    const updatedList = [...educationList];
+    updatedList[index] = { ...updatedList[index], [fieldName]: value };
+    onChange('educationList', updatedList);
+  };
+
+  const handleAddEducation = () => {
+    const updatedList = [
+      ...educationList,
+      { level: '', school_name: '', degree_course: '', from_year: '', to_year: '', honors_awards: '' }
+    ];
+    onChange('educationList', updatedList);
+  };
+
+  const handleRemoveEducation = (indexToRemove) => {
+    if (educationList.length <= 1) return;
+    const updatedList = educationList.filter((_, index) => index !== indexToRemove);
+    onChange('educationList', updatedList);
   };
 
   return (
     <div className="bg-white rounded-3xl border border-gray-200 shadow-sm overflow-hidden font-sans">
-      {/* Header Banner Section */}
-      <div className="bg-[#1e4a8a] p-5 pb-4 text-white flex flex-col gap-2">
+      <div className="bg-[#1e4a8a] p-4 text-white flex items-center justify-between">
         <div className="flex items-center gap-3">
-          {/* Section Number Badge */}
-          <span className="flex items-center justify-center bg-white/20 text-white font-semibold text-sm w-6 h-6 rounded-full">
-            4
-          </span>
-          {/* Header Icon */}
-          <svg className="w-5 h-5 text-white/90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222" />
-          </svg>
-          <h3 className="text-xl font-medium tracking-wide"> Background Information</h3>
+          <span className="flex items-center justify-center bg-white/20 text-white font-semibold text-xs w-5 h-5 rounded-full">4</span>
+          <h3 className="text-base font-semibold tracking-wide">Background Information</h3>
         </div>
       </div>
-      
-      {/* Subheader / Instruction Bar */}
-      <div className="bg-[#163664] px-5 py-2 text-white/90 text-sm border-t border-white/10">
-        Provide information about your highest level of completed formal education.
+
+      <div className="px-6 py-3 border-b border-gray-100 flex items-center justify-between bg-white">
+        <div className="flex items-center gap-2 text-[#1e4a8a] font-medium text-sm">
+          Highest Educational Attainment
+        </div>
+        <button
+          type="button"
+          onClick={handleAddEducation}
+          className="flex items-center gap-1.5 px-3 py-1.5 border border-blue-600 rounded-lg text-blue-600 font-medium text-sm hover:bg-blue-50 transition-colors"
+        >
+          <span className="text-base font-bold leading-none">+</span> Add Education
+        </button>
       </div>
 
-      {/* Form Grid Fields */}
-      <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5 bg-[#fcfdfd]">
-        {/* Education Level Selection */}
-        <div className="space-y-1.5">
-          <label className="block text-[15px] font-medium text-gray-800">
-            Education Level
-          </label>
-          <div className="relative">
-            <select
-              name="education_level"
-              value={data.education_level}
-              onChange={handleInputChange}
-              className="w-full h-11 px-4 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm bg-white text-gray-700 appearance-none shadow-sm"
-            >
-              <option value="">-- SELECT LEVEL --</option>
-              <option value="ELEMENTARY">ELEMENTARY</option>
-              <option value="SECONDARY">SECONDARY</option>
-              <option value="VOCATIONAL">VOCATIONAL</option>
-              <option value="COLLEGE">COLLEGE</option>
-              <option value="GRADUATE STUDIES">GRADUATE STUDIES</option>
-            </select>
-            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-500">
-              <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-                <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/>
-              </svg>
+      <div className="p-6 space-y-6 bg-[#fcfdfd]">
+        {educationList.map((edu, index) => (
+          <div key={index} className="p-4 border border-gray-200 rounded-xl bg-white shadow-sm space-y-4 relative">
+            {/* Unified 12-column Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
+              
+              <div className="md:col-span-3 space-y-1">
+                <label className="block text-xs font-semibold text-gray-700">Level <span className="text-red-500">*</span></label>
+                <select
+                  value={edu.level || ''}
+                  onChange={(e) => handleInputChange(index, 'level', e.target.value)}
+                  className="w-full h-10 px-3 border border-gray-300 rounded-lg text-sm bg-white"
+                >
+                  <option value="">-- Select --</option>
+                  <option value="ELEMENTARY">ELEMENTARY</option>
+                  <option value="SECONDARY">SECONDARY</option>
+                  <option value="VOCATIONAL">VOCATIONAL</option>
+                  <option value="COLLEGE">COLLEGE</option>
+                  <option value="GRADUATE STUDIES">GRADUATE STUDIES</option>
+                </select>
+              </div>
+
+              <div className="md:col-span-4 space-y-1">
+                <label className="block text-xs font-semibold text-gray-700">School/University <span className="text-red-500">*</span></label>
+                <input type="text" value={edu.school_name || ''} onChange={(e) => handleInputChange(index, 'school_name', e.target.value)} className="w-full h-10 px-3 border border-gray-300 rounded-lg text-sm" />
+              </div>
+
+              <div className="md:col-span-2 space-y-1">
+                <label className="block text-xs font-semibold text-gray-700">Degree / Course</label>
+                <input type="text" value={edu.degree_course || ''} onChange={(e) => handleInputChange(index, 'degree_course', e.target.value)} className="w-full h-10 px-3 border border-gray-300 rounded-lg text-sm" />
+              </div>
+
+              <div className="md:col-span-1 space-y-1">
+                <label className="block text-xs font-semibold text-gray-700">From</label>
+                <input type="date" value={edu.from_year || ''} onChange={(e) => handleInputChange(index, 'from_year', e.target.value)} className="w-full h-10 px-2 border border-gray-300 rounded-lg text-sm" />
+              </div>
+
+              <div className="md:col-span-1 space-y-1">
+                <label className="block text-xs font-semibold text-gray-700">To</label>
+                <input type="date" value={edu.to_year || ''} onChange={(e) => handleInputChange(index, 'to_year', e.target.value)} className="w-full h-10 px-2 border border-gray-300 rounded-lg text-sm" />
+              </div>
+
+              {/* Honors and Delete button integrated into the grid for better alignment */}
+              <div className="md:col-span-11 space-y-1">
+                <label className="block text-xs font-semibold text-gray-700">Honors / Awards Received</label>
+                <input type="text" value={edu.honors_awards || ''} onChange={(e) => handleInputChange(index, 'honors_awards', e.target.value)} className="w-full h-10 px-3 border border-gray-300 rounded-lg text-sm" />
+              </div>
+
+              <div className="md:col-span-1 flex items-end justify-end">
+                {educationList.length > 1 && (
+                  <button type="button" onClick={() => handleRemoveEducation(index)} className="p-2.5 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors h-10 w-full">
+                    <svg className="w-4 h-4 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                  </button>
+                )}
+              </div>
             </div>
           </div>
-        </div>
-
-        {/* School Name */}
-        <div className="space-y-1.5">
-          <label className="block text-[15px] font-medium text-gray-800">
-            Name of School
-          </label>
-          <input
-            type="text"
-            name="school_name"
-            value={data.school_name}
-            placeholder="e.g. UNIVERSITY OF THE PHILIPPINES"
-            onChange={handleInputChange}
-            className="w-full h-11 px-4 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm bg-[#fcfcfc] placeholder-gray-400 text-gray-700 shadow-sm"
-          />
-        </div>
-
-        {/* Degree / Course */}
-        <div className="space-y-1.5">
-          <label className="block text-[15px] font-medium text-gray-800">
-            Degree / Course
-          </label>
-          <input
-            type="text"
-            name="degree_course"
-            value={data.degree_course}
-            placeholder="e.g. BS COMPUTER SCIENCE (Leave blank if High School/Elem)"
-            onChange={handleInputChange}
-            className="w-full h-11 px-4 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm bg-[#fcfcfc] placeholder-gray-400 text-gray-700 shadow-sm"
-          />
-        </div>
-
-        {/* Honors & Awards */}
-        <div className="space-y-1.5">
-          <label className="block text-[15px] font-medium text-gray-800">
-            Scholarships, Honors, or Awards Received
-          </label>
-          <input
-            type="text"
-            name="honors_awards"
-            value={data.honors_awards}
-            placeholder="e.g. CUM LAUDE, DOST SCHOLAR (If none, leave blank)"
-            onChange={handleInputChange}
-            className="w-full h-11 px-4 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm bg-[#fcfcfc] placeholder-gray-400 text-gray-700 shadow-sm"
-          />
-        </div>
+        ))}
       </div>
     </div>
   );

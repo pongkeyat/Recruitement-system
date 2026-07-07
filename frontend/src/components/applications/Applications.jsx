@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Briefcase, CalendarDays, Clock3, Check } from "lucide-react";
+import { Briefcase,  Clock3, Check } from "lucide-react";
 import { getVacancies } from "../../api/Vacancies";
 
 function Applications({ formData, onChange }) {
@@ -107,7 +107,7 @@ function Applications({ formData, onChange }) {
                     <span className="text-red-500"> *</span>
                 </label>
 
-                <div className="relative">
+             
                     <input
                     type="date"
                     value={form.dateReceived}
@@ -120,11 +120,6 @@ function Applications({ formData, onChange }) {
                     className="w-full h-[50px] rounded-xl border border-gray-300 bg-[#F8FAFC] px-5 pr-12 text-[16px] outline-none focus:ring-2 focus:ring-blue-300"
                     />
 
-                    <CalendarDays
-                    size={18}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none"
-                    />
-                </div>
                 </div>
             </div>
 

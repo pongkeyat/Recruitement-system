@@ -1,205 +1,302 @@
-import { AlertCircle, Check, Mail, User } from "lucide-react";
+import {
+  Search,
+  User,
+  Mail,
+  Smartphone,
+} from "lucide-react";
 import { useState } from "react";
 
 export default function ApplicantForm({ formData, onChange }) {
   const [internal, setInternal] = useState({
-    lastName: "", firstName: "", middleName: "", suffix: "",
-    sex: "", dob: "", civilStatus: "", email: "", address: "", contactNumber: ""
+    lastName: "",
+    firstName: "",
+    middleName: "",
+    suffix: "",
+    sex: "",
+    dob: "",
+    civilStatus: "",
+    contactNumber: "",
+    email: "",
+    address: "",
   });
-  
+
   const form = formData ?? internal;
+
   const handleChange = (e) => {
     const { name, value } = e.target;
+
     if (onChange) onChange(name, value);
-    else setInternal({ ...internal, [name]: value });
+    else setInternal((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Base input class adapted to match image heights and styling defaults
-  const input = "w-full h-11 px-4 border text-sm rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-[#fcfcfc] text-gray-700 shadow-sm transition-all";
+  const input =
+    "w-full h-10 rounded-xl border border-slate-300 bg-white px-4 text-sm outline-none focus:border-[#204a87] focus:ring-2 focus:ring-blue-100";
 
   return (
-    <div className="bg-white rounded-3xl border border-gray-200 shadow-sm overflow-hidden font-sans">
-      {/* Header Banner Section */}
-      <div className="bg-[#1e4a8a] p-5 pb-4 text-white flex flex-col gap-2">
+    <div className="rounded-2xl overflow-hidden border border-slate-200 bg-white shadow-sm">
+
+      {/* HEADER */}
+      <div className="bg-[#204a87] px-5 py-3 flex items-center justify-between">
+
         <div className="flex items-center gap-3">
-          {/* Section Number Badge */}
-          <span className="flex items-center justify-center bg-white/20 text-white font-semibold text-sm w-6 h-6 rounded-full">
+
+          <div className="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center text-sm font-bold text-white">
             2
-          </span>
-          {/* Header Icon */}
-          <User className="w-5 h-5 text-white/90" />
-          <h3 className="text-xl font-medium tracking-wide">Applicant Information</h3>
+          </div>
+
+          <User size={17} className="text-white" />
+
+          <h2 className="font-semibold text-lg text-white">
+            Applicant Information
+          </h2>
+
         </div>
-      </div>
-      
-      {/* Subheader / Instruction Bar */}
-      <div className="bg-[#163664] px-5 py-2 text-white/90 text-sm border-t border-white/10">
-        Please complete the mandatory personal identity details below accurately.
+
+        <button
+          type="button"
+          className="flex items-center gap-2 rounded-md bg-white px-4 py-2 text-sm text-slate-800 shadow hover:bg-slate-100"
+        >
+          <Search size={17} />
+          Search Existing Applicant
+        </button>
+
       </div>
 
-      {/* Form Content Body */}
-      <div className="p-6 bg-[#fcfdfd] space-y-5">
-        {/* Row 1: Name Information */}
-        <div className="grid grid-cols-12 gap-x-5 gap-y-4">
-          <div className="col-span-12 md:col-span-4 space-y-1.5">
-            <label className="block text-[15px] font-medium text-gray-800">
+      {/* BODY */}
+
+      <div className="p-4 space-y-5">
+
+        {/* FIRST ROW */}
+
+        <div className="grid grid-cols-12 gap-4">
+
+          {/* LAST NAME */}
+
+          <div className="col-span-12 md:col-span-4">
+
+            <label className="block mb-2 text-sm font-medium text-slate-700">
               Last Name <span className="text-red-500">*</span>
             </label>
-            <div className="relative">
-              <input 
-                name="lastName" 
-                value={form.lastName ?? ""} 
-                onChange={handleChange} 
-                className={`${input} border-red-400 focus:ring-red-400/50 pr-10`} 
-              />
-              <AlertCircle size={18} className="absolute right-3 top-1/2 -translate-y-1/2 text-red-500 pointer-events-none" />
-            </div>
+
+            <input
+              name="lastName"
+              value={form.lastName ?? ""}
+              onChange={handleChange}
+              className={input}
+              placeholder="DELA CRUZ"
+            />
+
           </div>
 
-          <div className="col-span-12 md:col-span-4 space-y-1.5">
-            <label className="block text-[15px] font-medium text-gray-800">
+          {/* FIRST NAME */}
+
+          <div className="col-span-12 md:col-span-4">
+
+            <label className="block mb-2 text-sm font-medium text-slate-700">
               First Name <span className="text-red-500">*</span>
             </label>
-            <div className="relative">
-              <input 
-                name="firstName" 
-                value={form.firstName ?? ""} 
-                onChange={handleChange} 
-                className={`${input} border-red-400 focus:ring-red-400/50 pr-10`} 
-              />
-              <AlertCircle size={18} className="absolute right-3 top-1/2 -translate-y-1/2 text-red-500 pointer-events-none" />
-            </div>
+
+            <input
+              name="firstName"
+              value={form.firstName ?? ""}
+              onChange={handleChange}
+              className={input}
+              placeholder="JUAN"
+            />
+
           </div>
 
-          <div className="col-span-12 md:col-span-3 space-y-1.5">
-            <label className="block text-[15px] font-medium text-gray-800">
+          {/* MIDDLE NAME */}
+
+          <div className="col-span-12 md:col-span-3">
+
+            <label className="block mb-2 text-sm font-medium text-slate-700">
               Middle Name
             </label>
-            <div className="relative">
-              <input 
-                name="middleName" 
-                value={form.middleName ?? ""} 
-                onChange={handleChange} 
-                className={`${input} border-green-500 focus:ring-green-500/50 pr-10`} 
-              />
-              <Check size={18} className="absolute right-3 top-1/2 -translate-y-1/2 text-green-600 pointer-events-none" />
-            </div>
+
+            <input
+              name="middleName"
+              value={form.middleName ?? ""}
+              onChange={handleChange}
+              className={input}
+              placeholder="SANTOS"
+            />
+
           </div>
 
-          <div className="col-span-12 md:col-span-1 space-y-1.5">
-            <label className="block text-[15px] font-medium text-gray-800">
+          {/* SUFFIX */}
+
+          <div className="col-span-12 md:col-span-1">
+
+            <label className="block mb-2 text-sm font-medium text-slate-700">
               Suffix
             </label>
-            <select 
-              name="suffix" 
-              value={form.suffix ?? ""} 
-              onChange={handleChange} 
-              className={`${input} border-green-500 focus:ring-green-500/50`}
+
+            <select
+              name="suffix"
+              value={form.suffix ?? ""}
+              onChange={handleChange}
+              className={input}
             >
-              {["", "Jr.", "Sr.", "III"].map((s) => <option key={s} value={s}>{s}</option>)}
+              <option value="">—</option>
+              <option>Jr.</option>
+              <option>Sr.</option>
+              <option>II</option>
+              <option>III</option>
+              <option>IV</option>
             </select>
+
           </div>
+
         </div>
 
-        {/* Row 2: Demographics */}
-        <div className="grid grid-cols-12 gap-x-5 gap-y-4">
-          <div className="col-span-12 md:col-span-4 space-y-1.5">
-            <label className="block text-[15px] font-medium text-gray-800">
+                {/* SECOND ROW */}
+
+        <div className="grid grid-cols-12 gap-4">
+
+          {/* SEX */}
+
+          <div className="col-span-12 md:col-span-3">
+
+            <label className="block mb-2 text-sm font-medium text-slate-700">
               Sex <span className="text-red-500">*</span>
             </label>
-            <select 
-              name="sex" 
-              value={form.sex ?? ""} 
-              onChange={handleChange} 
-              className={`${input} border-red-400 focus:ring-red-400/50`}
+
+            <select
+              name="sex"
+              value={form.sex ?? ""}
+              onChange={handleChange}
+              className={input}
             >
               <option value="">-- Select --</option>
               <option value="Male">Male</option>
               <option value="Female">Female</option>
             </select>
+
           </div>
 
-          <div className="col-span-12 md:col-span-4 space-y-1.5">
-            <label className="block text-[15px] font-medium text-gray-800">
-              Date of Birth
+          {/* DATE OF BIRTH */}
+
+          <div className="col-span-12 md:col-span-3">
+
+            <label className="block mb-2 text-sm font-medium text-slate-700">
+              Date of Birth <span className="text-red-500">*</span>
             </label>
-            <input 
-              type="date" 
-              name="dob" 
-              value={form.dob ?? ""} 
-              onChange={handleChange} 
-              className={`${input} border-red-400 focus:ring-red-400/50`} 
+
+            <input
+              type="date"
+              name="dob"
+              value={form.dob ?? ""}
+              onChange={handleChange}
+              className={input}
             />
+
           </div>
 
-          <div className="col-span-12 md:col-span-4 space-y-1.5">
-            <label className="block text-[15px] font-medium text-gray-800">
+          {/* CIVIL STATUS */}
+
+          <div className="col-span-12 md:col-span-3">
+
+            <label className="block mb-2 text-sm font-medium text-slate-700">
               Civil Status
             </label>
-            <select 
-              name="civilStatus" 
-              value={form.civilStatus ?? ""} 
-              onChange={handleChange} 
-              className={`${input} border-green-500 focus:ring-green-500/50`}
+
+            <select
+              name="civilStatus"
+              value={form.civilStatus ?? ""}
+              onChange={handleChange}
+              className={input}
             >
               <option value="">-- Select --</option>
-              <option value="Single">Single</option>
-              <option value="Married">Married</option>
-              <option value="Widowed">Widowed</option>
+              <option>Single</option>
+              <option>Married</option>
+              <option>Widowed</option>
+              <option>Separated</option>
             </select>
-          </div>
-        </div>
 
-        {/* Row 3: Communication Meta fields */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
-          {/* Email Address */}
-          <div className="space-y-1.5">
-            <label className="block text-[15px] font-medium text-gray-800">
-              Email Address
-            </label>
-            <div className="flex shadow-sm rounded-xl overflow-hidden">
-              <div className="bg-gray-100 border border-gray-300 border-r-0 px-4 flex items-center text-gray-500">
-                <Mail size={18} />
-              </div>
-              <input 
-                name="email" 
-                value={form.email ?? ""} 
-                onChange={handleChange} 
-                className="flex-1 h-11 px-4 border border-green-500 focus:outline-none focus:ring-2 focus:ring-green-500/50 rounded-r-xl text-sm bg-[#fcfcfc] text-gray-700 placeholder-gray-400" 
-              />
-            </div>
           </div>
 
-          {/* Contact Number */}
-          <div className="space-y-1.5">
-            <label className="block text-[15px] font-medium text-gray-800">
+          {/* CONTACT NUMBER */}
+
+          <div className="col-span-12 md:col-span-3">
+
+            <label className="block mb-2 text-sm font-medium text-slate-700">
               Contact Number <span className="text-red-500">*</span>
             </label>
-            <input
-              name="contactNumber"
-              value={form.contactNumber ?? ""} 
-              onChange={handleChange}
-              className={`${input} border-red-400 focus:ring-red-400/50`}
-              placeholder="09XXXXXXXXX"
-            />
+
+            <div className="flex overflow-hidden rounded-xl border border-slate-300">
+
+              <div className="flex w-11 items-center justify-center bg-slate-100 border-r border-slate-300">
+                <Smartphone
+                  size={17}
+                  className="text-[#204a87]"
+                />
+              </div>
+
+              <input
+                name="contactNumber"
+                value={form.contactNumber ?? ""}
+                onChange={handleChange}
+                placeholder="09XXXXXXXXX"
+                className="h-10 flex-1 px-3 text-sm outline-none"
+              />
+
+            </div>
+
           </div>
+
         </div>
 
-        {/* Row 4: Full Width Address Area */}
-        <div className="space-y-1.5">
-          <label className="block text-[15px] font-medium text-gray-800">
+        {/* EMAIL */}
+
+        <div>
+
+          <label className="block mb-2 text-sm font-medium text-slate-700">
+            Email Address
+          </label>
+
+          <div className="flex overflow-hidden rounded-xl border border-slate-300">
+
+            <div className="flex w-11 items-center justify-center bg-slate-100 border-r border-slate-300">
+              <Mail
+                size={17}
+                className="text-[#204a87]"
+              />
+            </div>
+
+            <input
+              name="email"
+              value={form.email ?? ""}
+              onChange={handleChange}
+              placeholder="juandelacruz@email.com"
+              className="h-10 flex-1 px-3 text-sm outline-none"
+            />
+
+          </div>
+
+        </div>
+
+        {/* ADDRESS */}
+
+        <div>
+
+          <label className="block mb-2 text-sm font-medium text-slate-700">
             Residential Address <span className="text-red-500">*</span>
           </label>
-          <textarea 
-            rows="3" 
-            name="address" 
-            value={form.address ?? ""} 
-            onChange={handleChange} 
-            className="w-full p-4 border border-red-400 focus:ring-red-400/50 focus:outline-none focus:ring-2 rounded-xl text-sm bg-[#fcfcfc] text-gray-700 placeholder-gray-400 shadow-sm transition-all" 
-            placeholder="House/Unit No., Street, Barangay, Municipality, Province" 
+
+          <textarea
+            rows={2}
+            name="address"
+            value={form.address ?? ""}
+            onChange={handleChange}
+            className="w-full rounded-xl border border-slate-300 p-3 text-sm outline-none focus:border-[#204a87] focus:ring-2 focus:ring-blue-100 resize-none"
+            placeholder="House/Unit No., Street, Barangay, Municipality, Province"
           />
+
         </div>
+
       </div>
+
     </div>
   );
 }

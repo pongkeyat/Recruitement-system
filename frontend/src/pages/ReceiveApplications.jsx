@@ -9,7 +9,6 @@ import ApplicantEducationForm from "../components/applications/ApplicantEducatio
 import EqualOpportunityDeclaration from "../components/applications/EqualOpportunityDeclaration";
 import WorkExperienceForm from "../components/applications/WorkExperienceForm"; 
 import ApplicantTrainingForm from "../components/applications/ApplicantTrainingForm";
-// A. NEW IMPORT: Bring in the HR Remarks Form Component
 import HRRemarksForm from "../components/applications/HRRemarksForm";
 import { postApplications } from "../api/ApplicationApi";
 
@@ -20,7 +19,7 @@ export default function ReceiveApplications() {
   const [formData, setFormData] = useState({
     applicantData: {
       lastName: "", firstName: "", middleName: "", suffix: "",
-      sex: "", dob: "", civilStatus: "", email: "", address: ""
+      sex: "", dob: "", civilStatus: "", contactNumber: "", email: "", address: ""
     },
     applicationData: {
       vacancy_id: "",
@@ -41,13 +40,8 @@ export default function ReceiveApplications() {
       is_solo_parent: null,
       is_indigenous_person: null
     },
-    eligibilityData: {
-      eligibility_type: "",
-      rating: "",
-      date_of_exam: "",
-      place_of_exam: "",
-      license_number: ""
-    },
+    // CHANGED: eligibilityData is now an ARRAY (can hold 0, 1, or many entries)
+    eligibilityData: [],
     educationData: {
       education_level: "",
       school_name: "",
@@ -71,7 +65,6 @@ export default function ReceiveApplications() {
       training_type: "",
       conducted_by: ""
     },
-    // B. NEW STATE: State node targeting the DB signature parameters
     hrRemarksData: {
       hr_remarks_notes: "",
       application_status: ""
@@ -94,8 +87,10 @@ export default function ReceiveApplications() {
     setFormData((prev) => ({ ...prev, equalOpportunityData: { ...prev.equalOpportunityData, [name]: value } }));
   };
 
-  const handleEligibilityChange = (name, value) => {
-    setFormData((prev) => ({ ...prev, eligibilityData: { ...prev.eligibilityData, [name]: value } }));
+  // CHANGED: this now just replaces the whole eligibilityData array,
+  // since CivilServiceEligibilityForm calls onChange(newArray) directly.
+  const handleEligibilityChange = (newEligibilityArray) => {
+    setFormData((prev) => ({ ...prev, eligibilityData: newEligibilityArray }));
   };
 
   const handleEducationChange = (name, value) => {
@@ -110,7 +105,6 @@ export default function ReceiveApplications() {
     setFormData((prev) => ({ ...prev, trainingData: { ...prev.trainingData, [name]: value } }));
   };
 
-  // C. NEW STATE HANDLER: Updates HR specific properties
   const handleHRRemarksChange = (name, value) => {
     setFormData((prev) => ({
       ...prev,
@@ -123,13 +117,21 @@ export default function ReceiveApplications() {
     setLoading(true);
     setError(null);
 
+    const eligibilityEntry = Array.isArray(formData.eligibilityData) && formData.eligibilityData.length > 0
+      ? formData.eligibilityData[0]
+      : {};
+
+    const educationEntry = Array.isArray(formData.educationData?.educationList) && formData.educationData.educationList.length > 0
+      ? formData.educationData.educationList[0]
+      : {};
+
     const payload = {
-      vacancy_id: formData.applicationData.vacancy_id || null, 
+      vacancy_id: formData.applicationData.vacancy_id || null,
       date_received: formData.applicationData.dateReceived,
       time_received: formData.applicationData.timeReceived,
       received_by: formData.applicationData.receivedBy,
       submission_type: formData.applicationData.submissionType,
-      
+
       first_name: formData.applicantData.firstName,
       middle_name: formData.applicantData.middleName || null,
       last_name: formData.applicantData.lastName,
@@ -139,20 +141,31 @@ export default function ReceiveApplications() {
       civil_status: formData.applicantData.civilStatus,
       email_address: formData.applicantData.email,
       residential_address: formData.applicantData.address,
-      contact_number: formData.applicantData.contactNumber || "+639000000000",
-      
+      contact_number: formData.applicantData.contactNumber || null,
+
       ...formData.documentData,
       ...formData.equalOpportunityData,
-      ...formData.eligibilityData,
-      ...formData.educationData,
+
+      // Send the first eligibility row using the exact backend field names
+      eligibility_type: eligibilityEntry.eligibility_type || null,
+      rating: eligibilityEntry.rating || null,
+      date_of_exam: eligibilityEntry.date_of_exam || null,
+      place_of_exam: eligibilityEntry.place_of_exam || null,
+      license_number: eligibilityEntry.license_number || null,
+
+      // Preserve all entries for possible future use
+      eligibilities: formData.eligibilityData,
+
+      education_level: educationEntry.level || formData.educationData?.education_level || "",
+      school_name: educationEntry.school_name || formData.educationData?.school_name || "",
+      degree_course: educationEntry.degree_course || formData.educationData?.degree_course || "",
+      honors_awards: educationEntry.honors_awards || formData.educationData?.honors_awards || "",
       ...formData.workExperienceData,
       ...formData.trainingData,
-
-      // D. NEW PAYLOAD INTEGRATION: Spreads HR remarks onto your unified submission object
-      ...formData.hrRemarksData 
+      ...formData.hrRemarksData,
     };
 
-    console.log("🚀 Submitting Full Payload with HR Remarks:", payload);
+    console.log("🚀 Submitting Full Payload:", payload);
 
     try {
       const response = await postApplications(payload);
@@ -180,7 +193,10 @@ export default function ReceiveApplications() {
 
         <Applications formData={formData.applicationData} onChange={handleApplicationChange} />
         <ApplicantForm formData={formData.applicantData} onChange={handleApplicantChange} />
+
+        {/* CHANGED: passes the array + the array-setter handler */}
         <CivilServiceEligibilityForm data={formData.eligibilityData} onChange={handleEligibilityChange} />
+
         <EqualOpportunityDeclaration data={formData.equalOpportunityData} onChange={handleEqualOpportunityChange} />
         <DocumentChecklist documents={formData.documentData} onChange={handleDocumentChange} />
         
@@ -196,10 +212,6 @@ export default function ReceiveApplications() {
           onChange={handleTrainingChange} 
         />
 
-      
-
-
-        {/* E. NEW FORM MODULE: Positioned near the bottom before submission trigger */}
         <HRRemarksForm 
           data={formData.hrRemarksData} 
           onChange={handleHRRemarksChange} 
