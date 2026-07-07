@@ -7,7 +7,7 @@ import vacancyRoute from './vacanies/vacancy.routes.js'
 import qualificationsRoutes from './qualifications/qualifications.routes.js'
 import remarksRoute from './remarks/remarks.routes.js'
 import fullApplicationRoutes from './applications/applications.route.js'
-
+import screeningRoutes from './screening/screening.route.js'
 
 dotenv.config();
 const app = express();
@@ -26,7 +26,7 @@ app.use('/api/vacancies', vacancyRoute);
 app.use('/api/qualifications', qualificationsRoutes);
 app.use('/api/remarks', remarksRoute);
 app.use('/api/applications', fullApplicationRoutes);
-
+app.use('/api/screening', screeningRoutes);
 
 
 const PORT = process.env.PORT || 5000;

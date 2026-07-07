@@ -12,6 +12,7 @@ import {
   LogOut,
   UserRoundCheck,
   UserRoundX,
+  User
 
 } from 'lucide-react';
 
@@ -46,6 +47,12 @@ export default function SideBar() {
         { label: "Initial Screening", to: "/initialScreening", icon: ClipboardCheck },
         { label: "Qualified", to: "/Qualified", icon: UserRoundCheck },
         { label: "Disqualified", to: "/Disqualified", icon: UserRoundX },
+      ]
+    },
+         {
+      title: "ADMIN",
+      items: [
+        { label: "User Management", to: "/usermanagement", icon: User },
       ]
     },
 

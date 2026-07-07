@@ -12,6 +12,8 @@ import AllApplication from '../pages/AllApplication';
 import ViewApplicants from '../pages/ViewApplicants';
 import InitialScreening from '../pages/InitialScreening';
 import ApplicantsInitialScreening from '../pages/ApplicantsInitialScreening';
+import UserManagement from '../pages/Usermanagent';
+import ChangePassword from '../pages/ChangePassword';
 
 
 function AppLayout({ userToken }) {
@@ -51,6 +53,7 @@ export default function PublicRoutes() {
            ------------------------------------------------------------------ */}
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/change-password" element={<ChangePassword/>} />
         
 
         {/* ------------------------------------------------------------------
@@ -65,6 +68,8 @@ export default function PublicRoutes() {
         <Route path="/applicants/:id" element={<ViewApplicants />} />
         <Route path="/initialScreening" element={<InitialScreening />} />
         <Route path="/initialScreening/:id" element={<ApplicantsInitialScreening />} />
+        <Route path="/usermanagement" element={<UserManagement />} />
+        
 
         </Route>
 

@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { loginUser } from '../api/authApi';
+import { useAuth } from '../context/AuthContext'; // Ensure this matches your AuthContext file path
 import logo from "../assets/Logo.png";
 import { BookOpen, Info, ClipboardList, Eye, EyeOff } from "lucide-react";
 
 export default function Login() {
+  const { login } = useAuth(); // Consume the context login method
+  const navigate = useNavigate();
+
   const [form, setForm] = useState({
     email: "",
     password: ""
@@ -13,8 +16,7 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [emailError, setEmailError] = useState("");
   const [passwordError, setPasswordError] = useState("");
-
-  const navigate = useNavigate();
+  const [submitError, setSubmitError] = useState(""); // Captures API error states
 
   const handleLandingPageClick = () => {
     navigate("/");
@@ -29,14 +31,16 @@ export default function Login() {
 
     if (name === "email") setEmailError("");
     if (name === "password") setPasswordError("");
+    setSubmitError("");
   };
 
-  const handleFormSubmit = (e) => {
+  const handleFormSubmit = async (e) => {
     e.preventDefault();
 
     let valid = true;
     setEmailError("");
     setPasswordError("");
+    setSubmitError("");
 
     if (form.email.trim() === "") {
       setEmailError("Please enter your email.");
@@ -50,19 +54,28 @@ export default function Login() {
 
     if (!valid) return;
 
-    loginUser(form)
-            .then((res) => {
-            console.log(res);
-            const token = res.token || res.data?.token; 
-            if (token) {
-                localStorage.setItem('token', token);
-            }
-            navigate("/dashboard");
-            })
-            .catch((err) => {
-            console.error(err);
-            });
-    };
+    try {
+      // login() updates context state and stores 'auth_token' properly
+      const result = await login(form);
+      console.log("Login Success result:", result);
+
+      // Access safe nested user object returned directly from auth wrapper logic
+      const userData = result?.user;
+      
+      if (userData && userData.isPasswordChanged === false) {
+        // Force immediate credential updates for initial logins
+        navigate("/change-password");
+      } else {
+        // Forward directly to system operations hub
+        navigate("/dashboard");
+      }
+    } catch (err) {
+      console.error("Login failed:", err);
+      // Fallback extraction handling for structural Axios response errors
+      const msg = err.response?.data?.error || err.message || "Invalid credentials. Please try again.";
+      setSubmitError(msg);
+    }
+  };
 
   return (
     <div className="relative flex min-h-screen flex-col overflow-hidden font-sans">
@@ -111,6 +124,13 @@ export default function Login() {
 
             {/* FORM */}
             <form onSubmit={handleFormSubmit} className="space-y-3">
+              {/* GLOBAL SUBMIT ERROR CONTAINER */}
+              {submitError && (
+                <div className="rounded-md bg-red-50 p-2.5 text-center text-xs font-medium text-red-600 border border-red-100">
+                  ⚠️ {submitError}
+                </div>
+              )}
+
               {/* USERNAME / EMAIL */}
               <div className="flex flex-col gap-1">
                 <label 
@@ -141,7 +161,7 @@ export default function Login() {
                   htmlFor="password" 
                   className="text-xs font-semibold text-slate-600 uppercase tracking-wide px-0.5"
                 >
-                  password
+                  PASSWORD
                 </label>
                 <div className="relative">
                   <input

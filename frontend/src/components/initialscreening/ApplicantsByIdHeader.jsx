@@ -1,59 +1,16 @@
 import { ClipboardCheck, FileText, ArrowLeft } from "lucide-react";
-import { useEffect, useState } from "react";
-import { getApplicationById } from '../../api/ApplicationApi';
 
 export default function ApplicantsByIdHeader({
-  applicationId,
+  application,
   onBack,
   onViewApplication,
 }) {
-  const [application, setApplication] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    loadApplication();
-  }, [applicationId]);
-
-  const loadApplication = async () => {
-    try {
-      setLoading(true);
-
-      const data = await getApplicationById(applicationId);
-
-      // depending on your API
-      setApplication(data.data || data);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  if (loading) {
-    return (
-      <div className="bg-white rounded-3xl shadow-sm border border-gray-200 p-8">
-        Loading...
-      </div>
-    );
-  }
-
-  if (!application) return null;
-
-  const applicantName = [
-    application.last_name,
-    application.first_name,
-    application.middle_name,
-    application.suffix,
-  ]
-    .filter(Boolean)
-    .join(", ");
-
   return (
     <div className="bg-white rounded-3xl shadow-sm border border-gray-200 overflow-hidden">
-      <div className="flex justify-between items-center p-6">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center p-6 gap-4">
         {/* Left */}
         <div className="flex gap-4">
-          <div className="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center">
+          <div className="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
             <ClipboardCheck className="text-blue-700" size={24} />
           </div>
 
@@ -66,23 +23,19 @@ export default function ApplicantsByIdHeader({
               <span className="font-semibold text-blue-700">
                 LUSDO-APP-{application.applicant_id}
               </span>
-
               {" — "}
-
               {application.office_unit}
-
               {" — "}
-
               {application.position_title}
             </p>
           </div>
         </div>
 
         {/* Right */}
-        <div className="flex gap-3">
+        <div className="flex gap-3 w-full md:w-auto justify-end">
           <button
             onClick={onBack}
-            className="px-5 py-2 border rounded-lg flex items-center gap-2 hover:bg-gray-50"
+            className="px-5 py-2 border rounded-lg flex items-center gap-2 hover:bg-gray-50 transition text-sm font-medium"
           >
             <ArrowLeft size={18} />
             Back
@@ -90,7 +43,7 @@ export default function ApplicantsByIdHeader({
 
           <button
             onClick={onViewApplication}
-            className="px-5 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2"
+            className="px-5 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2 transition text-sm font-medium"
           >
             <FileText size={18} />
             View Full Application
