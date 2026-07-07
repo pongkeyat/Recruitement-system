@@ -301,10 +301,16 @@ export const getApplicantById = async (req, res) => {
             conducted_by,
 
             -- 9. HR Remarks
-            hr_remarks_notes
+            hr_remarks_notes,
+
+            vacancy_specific_qualifications.education_requirement,
+            vacancy_specific_qualifications.training_requirement,
+            vacancy_specific_qualifications.experience_requirement,
+            vacancy_specific_qualifications.eligibility_requirement
 
         FROM job_applications
         LEFT JOIN vacancies ON job_applications.vacancy_id = vacancies.vacancy_id
+        LEFT JOIN vacancy_specific_qualifications ON vacancies.vacancy_id = vacancy_specific_qualifications.vacancy_id
         LEFT JOIN applicant_information ON job_applications.job_applications_id = applicant_information.job_applications_id
         LEFT JOIN equal_opportunity_declarations ON applicant_information.applicant_id = equal_opportunity_declarations.applicant_id
         LEFT JOIN civil_service_eligibility ON applicant_information.applicant_id = civil_service_eligibility.applicant_id
@@ -313,7 +319,8 @@ export const getApplicantById = async (req, res) => {
         LEFT JOIN work_experience ON applicant_information.applicant_id = work_experience.applicant_id
         LEFT JOIN relevant_trainings ON applicant_information.applicant_id = relevant_trainings.applicant_id
         LEFT JOIN hr_remarks_final_notes ON applicant_information.applicant_id = hr_remarks_final_notes.applicant_id
-        WHERE applicant_information.applicant_id = $1;
+        WHERE applicant_information.applicant_id = $1
+           OR job_applications.job_applications_id = $1;
     `;
 
     try {
@@ -324,10 +331,10 @@ export const getApplicantById = async (req, res) => {
             return res.status(404).json({ success: false, message: 'Applicant not found.' });
         }
 
-        return res.status(200).json({
-            success: true,
-            data: result.rows[0] // Return the single object
-        });
+    return res.status(200).json({
+    success: true,
+    data: result.rows[0]
+    });
     } catch (error) {
         console.error('Fetch applicant failure:', error);
         return res.status(500).json({ error: 'Internal server error fetching applicant profile.' });

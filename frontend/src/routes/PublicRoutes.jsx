@@ -14,6 +14,8 @@ import InitialScreening from '../pages/InitialScreening';
 import ApplicantsInitialScreening from '../pages/ApplicantsInitialScreening';
 import UserManagement from '../pages/Usermanagent';
 import ChangePassword from '../pages/ChangePassword';
+import Qualified from '../pages/Qualified';
+import Disqualified from '../pages/Disqualified';
 
 
 function AppLayout({ userToken }) {
@@ -69,6 +71,8 @@ export default function PublicRoutes() {
         <Route path="/initialScreening" element={<InitialScreening />} />
         <Route path="/initialScreening/:id" element={<ApplicantsInitialScreening />} />
         <Route path="/usermanagement" element={<UserManagement />} />
+        <Route path='/Qualified' element={<Qualified />} />
+        <Route path='/Disqualified' element={<Disqualified />} />
         
 
         </Route>

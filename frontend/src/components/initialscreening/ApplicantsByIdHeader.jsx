@@ -5,6 +5,9 @@ export default function ApplicantsByIdHeader({
   onBack,
   onViewApplication,
 }) {
+
+  if (!application) return null;
+  
   return (
     <div className="bg-white rounded-3xl shadow-sm border border-gray-200 overflow-hidden">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center p-6 gap-4">

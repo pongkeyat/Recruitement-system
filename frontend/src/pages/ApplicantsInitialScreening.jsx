@@ -1,8 +1,9 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState, useCallback } from "react";
 import { getApplicationById } from "../api/ApplicationApi";
-import ApplicantsByIdHeader from "../components/initialscreening/ApplicantsByIdHeader";
+//import ApplicantsByIdHeader from "../components/initialscreening/ApplicantsByIdHeader";
 import ApplicantSummaryCard from "../components/initialscreening/ApplicantSummaryCard";
+import ApplicantEvaluation from "../components/initialscreening/ApplicantEvaluation";
 
 export default function ApplicantsInitialScreening() {
   const { id } = useParams();
@@ -45,13 +46,18 @@ export default function ApplicantsInitialScreening() {
   }
 
   return (
-    <div className="w-full h-full flex flex-col gap-6 p-6 bg-[#edf2f8] min-h-screen">
+    <div className="w-full h-full flex flex-col gap-6 p-6  min-h-screen">
+      {/*
       <ApplicantsByIdHeader 
         application={application} 
         onBack={() => navigate(-1)} 
         onViewApplication={() => navigate(`/applicants/${id}/full-view`)} 
       />
+      */}
+
       <ApplicantSummaryCard application={application} />
+
+       <ApplicantEvaluation applicant={application} />
     </div>
   );
 }
