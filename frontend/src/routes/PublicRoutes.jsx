@@ -16,16 +16,19 @@ import UserManagement from '../pages/Usermanagent';
 import ChangePassword from '../pages/ChangePassword';
 import Qualified from '../pages/Qualified';
 import Disqualified from '../pages/Disqualified';
+import ProtectedRoute from './ProtectedRoutes';
+import { useAuth } from '../context/AuthContext';
 
 
-function AppLayout({ userToken }) {
+function AppLayout() {
+  const { token } = useAuth();
   return (
   <div className="h-screen w-screen overflow-hidden">
         <div className="grid grid-cols-13 grid-rows-[auto_1fr] h-full">
           
           {/* ROW 1: Header */}
           <div className="col-span-13">
-            <Header isLoggedIn={!!userToken} />
+            <Header isLoggedIn={!!token} />
           </div>
 
           {/* ROW 2, COL 1: Expanded Sidebar (Changed from col-span-1 to col-span-2) */}
@@ -45,8 +48,6 @@ function AppLayout({ userToken }) {
 
 // 2. The Single Master Routing Engine
 export default function PublicRoutes() {
-  const userToken = localStorage.getItem('token') || null; 
-
   return (
     <Router>
       <Routes>
@@ -61,7 +62,7 @@ export default function PublicRoutes() {
         {/* ------------------------------------------------------------------
             PROTECTED/APP ROUTES (Automatically wrapped in your design layout)
            ------------------------------------------------------------------ */}
-        <Route element={<AppLayout userToken={userToken} />}>
+        <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
         <Route path="/dashboard" element={<DashBoard />} />
         <Route path="/postVacancy" element={<PostVacancy />} />
         <Route path="/VacancyPosting" element={<VacancyPosting />} />

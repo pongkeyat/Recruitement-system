@@ -5,9 +5,10 @@ import {
   FaClock,
   FaEnvelope,
 } from "react-icons/fa";
-import ImportantReminders from "./ImportanceReminders"
+import ImportantReminders from "./ImportanceReminders";
 
-export default function HeroContent({ searchTerm, setSearchTerm }) {
+// Make sure to pass 'jobs' into HeroContent alongside your search props
+export default function HeroContent({ searchTerm, setSearchTerm, jobs = [] }) {
   const quickTags = ["Administrative", "Utility", "Driver"];
   const steps = [
     "Prepare Documents",
@@ -16,6 +17,15 @@ export default function HeroContent({ searchTerm, setSearchTerm }) {
     "Attend Interview",
     "Receive Appointment",
   ];
+
+  // Dynamic Statistics derived from the fetched jobs data
+  const openPositionsCount = jobs.length;
+  
+  const totalSlots = jobs.reduce((sum, job) => sum + (job.slots || 0), 0);
+  
+  const uniqueOfficesCount = new Set(
+    jobs.map((job) => job.office?.trim()).filter(Boolean)
+  ).size;
 
   const handleVacanciesClick = (e) => {
     e.preventDefault();
@@ -26,7 +36,7 @@ export default function HeroContent({ searchTerm, setSearchTerm }) {
   };
 
   return (
-    <main className="w-full flex flex-col xl:flex-row items-start justify-between gap-12 px-6 md:px-16  relative z-10 bg-gradient-to-b from-[#1e3c72] via-[#112244] to-[#0d1b2a] text-white font-sans relative overflow-hidden py-12 md:py-16 border-b border-white/5">
+    <main className="w-full flex flex-col xl:flex-row items-start justify-between gap-12 px-6 md:px-16 bg-gradient-to-b from-[#1e3c72] via-[#112244] to-[#0d1b2a] text-white font-sans relative overflow-hidden py-12 md:py-16 border-b border-white/5">
       
       {/* LEFT SIDE: MAIN SEARCH AND CTAs */}
       <div className="max-w-xl w-full ">
@@ -102,24 +112,24 @@ export default function HeroContent({ searchTerm, setSearchTerm }) {
           ))}
         </div>
 
-        {/* STATS COUNT */}
+        {/* STATS COUNT (Now Dynamic) */}
         <div className="flex gap-12 border-t border-white/5 pt-6">
           <div>
-            <div className="text-3xl font-black text-amber-500">3</div>
+            <div className="text-3xl font-black text-amber-500">{openPositionsCount}</div>
             <div className="text-[10px] uppercase tracking-wider text-gray-400 font-bold mt-0.5">
               Open Positions
             </div>
           </div>
 
           <div>
-            <div className="text-3xl font-black text-amber-500">3</div>
+            <div className="text-3xl font-black text-amber-500">{totalSlots}</div>
             <div className="text-[10px] uppercase tracking-wider text-gray-400 font-bold mt-0.5">
               Available Slots
             </div>
           </div>
 
           <div>
-            <div className="text-3xl font-black text-amber-500">2</div>
+            <div className="text-3xl font-black text-amber-500">{uniqueOfficesCount}</div>
             <div className="text-[10px] uppercase tracking-wider text-gray-400 font-bold mt-0.5">
               Office Units
             </div>

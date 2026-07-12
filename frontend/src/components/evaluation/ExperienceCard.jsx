@@ -1,9 +1,7 @@
-import { useState } from "react";
 import EvaluationCard from "./EvaluationCard";
 
-export default function ExperienceCard({ applicant }) {
-
-    const [note, setNote] = useState("");
+// Destructure note and setNote passed from the parent component
+export default function ExperienceCard({ applicant, status, setStatus, note, setNote }) {
 
     let months = 0;
 
@@ -26,8 +24,6 @@ export default function ExperienceCard({ applicant }) {
     const years = Math.floor(months / 12);
     const remainingMonths = months % 12;
 
-    const pass = months >= 12;
-
     const actual =
         applicant.company_office
             ? (
@@ -48,25 +44,15 @@ export default function ExperienceCard({ applicant }) {
             : "No records found";
 
     return (
-
         <EvaluationCard
-
-            color="bg-orange-500"
-
+                    color="bg-blue-500"
             title="EXPERIENCE STANDARD"
-
             requirement={applicant.experience_requirement}
-
             actual={actual}
-
-            status={pass ? "PASS" : "PENDING"}
-
+            status={status}
+            setStatus={setStatus}
             note={note}
-
             setNote={setNote}
-
         />
-
     );
-
 }

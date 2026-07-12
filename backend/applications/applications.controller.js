@@ -18,6 +18,7 @@ export const getFullApplicants = async (req, res) => {
     const query = `
         SELECT 
             -- 1. Job Applications
+            job_applications.job_applications_id,
             job_applications.vacancy_id,
             vacancies.position_title, -- Added position_title from vacancies table
             vacancies.office_unit,

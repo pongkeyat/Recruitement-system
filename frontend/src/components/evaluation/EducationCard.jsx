@@ -1,41 +1,18 @@
-import { useState } from "react";
 import EvaluationCard from "./EvaluationCard";
 
-export default function EducationCard({ applicant }) {
-
-    const [note, setNote] = useState("");
-
-    const pass =
-        applicant.degree_course
-            ?.toLowerCase()
-            .includes("information technology");
+// Destructure note and setNote passed from ApplicantEvaluation
+export default function EducationCard({ applicant, status, setStatus, note, setNote }) {
 
     return (
-
         <EvaluationCard
-
-            color="bg-blue-500"
-
-            title="EDUCATION STANDARD"
-
-            requirement={applicant.education_requirement}
-
-            actual={
-
-                applicant.degree_course ||
-
-                "No records found"
-
-            }
-
-            status={pass ? "PASS" : "PENDING"}
-
-            note={note}
-
-            setNote={setNote}
-
+                    color="bg-blue-500"
+                    title="EDUCATION STANDARD"
+                    requirement={applicant.education_requirement}
+                    actual={applicant.degree_course || "No records found"}
+            status={status}
+            setStatus={setStatus}
+                    note={note}
+                    setNote={setNote}
         />
-
     );
-
 }

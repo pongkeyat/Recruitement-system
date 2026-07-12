@@ -1,20 +1,13 @@
-import { useState } from "react";
 import EvaluationCard from "./EvaluationCard";
 
-export default function EligibilityCard({ applicant }) {
-
-    const [note, setNote] = useState("");
+// Destructure note and setNote passed from the parent component
+export default function EligibilityCard({ applicant, status, setStatus, note, setNote }) {
 
     const requirement =
         applicant.eligibility_requirement || "";
 
     const applicantEligibility =
         applicant.eligibility_type || "";
-
-    const pass =
-        applicantEligibility
-            .toLowerCase()
-            .includes(requirement.toLowerCase());
 
     const actual =
         applicantEligibility
@@ -40,25 +33,15 @@ export default function EligibilityCard({ applicant }) {
             : "No records found";
 
     return (
-
         <EvaluationCard
-
-            color="bg-cyan-500"
-
+            color="bg-blue-500"
             title="ELIGIBILITY STANDARD"
-
             requirement={requirement}
-
             actual={actual}
-
-            status={pass ? "PASS" : "PENDING"}
-
+            status={status}
+            setStatus={setStatus}
             note={note}
-
             setNote={setNote}
-
         />
-
     );
-
 }

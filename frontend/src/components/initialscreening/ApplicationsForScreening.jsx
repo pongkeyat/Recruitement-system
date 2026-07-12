@@ -1,22 +1,50 @@
 import { useState, useEffect } from "react";
-import { getApplications } from "../../api/ApplicationApi";
 import { useNavigate } from "react-router-dom";
+import { ClipboardList, Eye, UserPlus } from "lucide-react";
+import { getApplications } from "../../api/ApplicationApi";
+
+const getStatusStyles = (status) => {
+  switch (status) {
+    case "Initial Screening": return "bg-orange-100 text-orange-700";
+    case "Qualified": return "bg-emerald-100 text-emerald-700";
+    case "Disqualified": return "bg-red-100 text-red-700";
+    default: return "bg-slate-100 text-slate-700";
+  }
+};
 
 export default function ApplicationsForScreening() {
-  const [applicants, setApplicants] = useState([]);
+  const [applications, setApplications] = useState([]);
+  const [filteredApplications, setFilteredApplications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
-  const [filter, setFilter] = useState("All");
+  const [statusFilter, setStatusFilter] = useState("All"); 
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const data = await getApplications();
-        setApplicants(Array.isArray(data) ? data : (data.data || []));
-      } catch (err) {
-        console.error("Failed to fetch applications:", err);
+        const response = await getApplications();
+        const data = response && response.data ? response.data : response;
+        
+        if (Array.isArray(data)) {
+          // Keep records belonging to the "Initial Screening" stage
+          const screeningRecords = data.filter((app) => {
+            const status = (app.application_status || "Initial Screening").toLowerCase();
+            return (
+              status === "initial screening" || 
+              status === "initial_screening_qualified" || 
+              status === "initial_screening_disqualified"
+            );
+          });
+          
+          setApplications(screeningRecords);
+        } else {
+          console.error("Data is not in expected array format:", response);
+          setApplications([]);
+        }
+      } catch (error) {
+        console.error("Error fetching applications:", error);
       } finally {
         setLoading(false);
       }
@@ -24,6 +52,31 @@ export default function ApplicationsForScreening() {
     fetchData();
   }, []);
 
+  // Handle Search and Sub-status filters
+  useEffect(() => {
+    const records = applications.filter((app) => {
+      const firstName = app.first_name || "";
+      const lastName = app.last_name || "";
+      const fullName = `${firstName} ${lastName}`.toLowerCase();
+      const matchSearch = 
+        fullName.includes(search.toLowerCase()) || 
+        (app.position_title || "").toLowerCase().includes(search.toLowerCase());
+
+      const appStatus = app.application_status || "Initial Screening";
+      let matchStatus = true;
+      if (statusFilter === "Initial Screening") {
+        matchStatus = appStatus === "Initial Screening";
+      } else if (statusFilter === "Qualified") {
+        matchStatus = appStatus === "Qualified" || appStatus === "initial_screening_qualified";
+      } else if (statusFilter === "Disqualified") {
+        matchStatus = appStatus === "Disqualified" || appStatus === "initial_screening_disqualified";
+      }
+
+      return matchSearch && matchStatus;
+    });
+
+    setFilteredApplications(records);
+  }, [search, statusFilter, applications]);
 
   const handleViewApplication = (id) => {
     if (!id) {
@@ -33,96 +86,91 @@ export default function ApplicationsForScreening() {
     navigate(`/initialScreening/${id}`);
   };
 
-  const filtered = applicants.filter((app) => {
-    const firstName = app.first_name || "";
-    const lastName = app.last_name || "";
-    const fullName = `${firstName} ${lastName}`.toLowerCase();
-    
-    const nameMatch = fullName.includes(search.toLowerCase());
-    const positionMatch = app.position_title?.toLowerCase().includes(search.toLowerCase());
-    const matchSearch = nameMatch || positionMatch;
-    
-    const appStatus = (app.application_status || "Initial Screening").toString();
-    const matchStatus = filter === "All" || appStatus === filter;
-    
-    return matchSearch && matchStatus;
-  });
-
   return (
-    <div className="bg-white rounded-2xl shadow mt-8 p-6">
-      <div className="mb-5">
-        <h2 className="text-2xl font-bold text-slate-800">Applications</h2>
-        <p className="text-gray-500">Review and screen submitted applications.</p>
-      </div>
+    <div className="min-h-screen p-6">
 
-      <div className="mb-4 flex flex-col sm:flex-row gap-4">
+
+      {/* Filters Toolbar */}
+      <div className="mb-6 flex flex-col sm:flex-row gap-4 items-center">
         <input
           type="text"
-          placeholder="Search by name or position..."
-          className="border p-2 rounded-lg w-full md:w-64 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          placeholder="Search screening pool by name or position..."
+          className="border p-3 rounded-xl w-full md:w-80 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
         <select 
-          className="border p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" 
-          value={filter} 
-          onChange={(e) => setFilter(e.target.value)}
+          className="border p-3 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white font-medium text-slate-700" 
+          value={statusFilter} 
+          onChange={(e) => setStatusFilter(e.target.value)}
         >
-          <option value="All">All Status</option>
-          <option value="Initial Screening">Initial Screening</option>
-          <option value="Qualified">Qualified</option>
-          <option value="Disqualified">Disqualified</option>
+          <option value="All">All Screening Records</option>
+          <option value="Initial Screening">Pending Review</option>
+          <option value="Qualified">Screening Passed</option>
+          <option value="Disqualified">Screening Failed</option>
         </select>
       </div>
 
-      <div className="overflow-x-auto border rounded-xl">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
+      {/* Table Section */}
+      <div className="rounded-3xl bg-white shadow overflow-hidden">
+        <table className="min-w-full">
+          <thead className="bg-[#1E3E74] text-white">
             <tr>
-              <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Vacancy ID</th>
-              <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Applicant Name</th>
-              <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Position</th>
-              <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Date Received</th>
-              <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
-              <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Actions</th>
+              <th className="px-5 py-4 text-left">Vacancy ID</th>
+              <th className="px-5 py-4 text-left">Applicant Name</th>
+              <th className="px-5 py-4 text-left">Position</th>
+              <th className="px-5 py-4 text-left">Date Applied</th>
+              <th className="px-5 py-4 text-center">Screening Status</th>
+              <th className="px-5 py-4 text-center">Action</th>
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
+          <tbody>
             {loading ? (
               <tr>
-                <td colSpan="6" className="text-center py-10 text-gray-500">Loading applications...</td>
+                <td colSpan="6" className="text-center py-10 text-slate-500 font-medium">
+                  Loading applications...
+                </td>
               </tr>
-            ) : filtered.length > 0 ? (
-              filtered.map((app) => (
-                <tr key={app.applicant_id} className="hover:bg-gray-50 transition">
-                  <td className="px-6 py-4 font-mono text-sm text-gray-600">{app.vacancy_id}</td>
-                  <td className="px-6 py-4">
-                    <p className="font-semibold text-slate-800">
-                      {`${app.last_name || ""}, ${app.first_name || ""} ${app.middle_name || ""}`.trim()}
-                    </p>
-                    <p className="text-sm text-gray-500">{app.email_address}</p>
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-700">{app.position_title}</td>
-                  <td className="px-6 py-4 text-sm text-gray-500">{app.date_received}</td>
-                  <td className="px-6 py-4">
-                    <span className="px-2.5 py-1 bg-blue-50 text-blue-700 rounded-md text-xs font-semibold uppercase tracking-wider">
-                      {app.application_status || "Initial Screening"}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-sm">
-                    <button 
-                      onClick={() => handleViewApplication(app.applicant_id)} 
-                      className="text-blue-600 hover:text-blue-800 hover:underline font-semibold transition"
-                    >
-                      View
-                    </button>
-                  </td>
-                </tr>
-              ))
-            ) : (
+            ) : filteredApplications.length === 0 ? (
               <tr>
-                <td colSpan="6" className="text-center py-10 text-gray-500">No applications found.</td>
+                <td colSpan="6" className="text-center py-10 text-slate-500 font-medium">
+                  No applications matched your criteria in this pool.
+                </td>
               </tr>
+            ) : (
+              filteredApplications.map((app, idx) => {
+                const targetId = app.applicant_id || app.application_id || app.job_applications_id || app.id;
+
+                return (
+                  <tr key={targetId || idx} className="border-b hover:bg-slate-50">
+                    <td className="px-5 py-4 font-medium text-[#1E3E74]">{app.vacancy_id}</td>
+                    <td className="px-5 py-4">
+                      <p className="font-semibold text-slate-700">
+                        {app.last_name && app.first_name ? `${app.last_name}, ${app.first_name}` : "Unknown"}
+                      </p>
+                      <p className="text-xs text-gray-400">{app.email_address}</p>
+                    </td>
+                    <td className="px-5 py-4 text-slate-600 font-medium">{app.position_title || "N/A"}</td>
+                    <td className="px-5 py-4 text-slate-600">{app.date_received || "N/A"}</td>
+                    <td className="px-5 py-4 text-center">
+                      <span className={`rounded-full px-4 py-1 text-xs font-bold uppercase tracking-wider ${getStatusStyles(app.application_status || "Initial Screening")}`}>
+                        {app.application_status || "Initial Screening"}
+                      </span>
+                    </td>
+                    <td className="px-5 py-4">
+                      <div className="flex items-center justify-center">
+                        <button
+                          onClick={() => handleViewApplication(targetId)}
+                          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium shadow-sm"
+                        >
+                          <Eye size={16} />
+                          Evaluate
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })
             )}
           </tbody>
         </table>

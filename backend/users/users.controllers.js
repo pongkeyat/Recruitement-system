@@ -2,7 +2,6 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto'; 
 import pool from "../config/db.js";
-// 1. Connect the notification service utilities
 import { AccountCreatedEmail } from "./user.email.services.js";
 
 const cookieOptions = {
@@ -12,7 +11,6 @@ const cookieOptions = {
     maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
 }
 
-// Changed payload key from 'id' to 'email'
 const generateToken = (email) => {
     return jwt.sign({ email }, process.env.JWT_SECRET, {
         expiresIn: '7d'
@@ -38,7 +36,6 @@ export const registerUser = async (req, res) => {
             return res.status(400).json({ error: 'User already exists' });
         }
 
-        // --- CUSTOM PARSABLE 12-CHARACTER PASSWORD GENERATOR ---
         const uppercase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
         const lowercase = "abcdefghijklmnopqrstuvwxyz";
         const numbers = "0123456789";
@@ -64,26 +61,21 @@ export const registerUser = async (req, res) => {
         const generatedPassword = passwordArray.join('');
         const hashedPassword = await bcrypt.hash(generatedPassword, 10);
 
-        // Fixed RETURNING clause to use email instead of id
         const newUser = await pool.query(
             'INSERT INTO users (email, password, role) VALUES ($1, $2, $3::character varying) RETURNING email, role, is_password_changed',
             [email, hashedPassword, role]
         );
 
         let emailStatus = 'SENT';
-        let logMessage = 'DEPED Recruitment System credentials successfully emailed.';
 
         try {
             await AccountCreatedEmail(email, generatedPassword);
         } catch (mailError) {
             console.error("❌ Mail delivery failed:", mailError);
             emailStatus = 'FAILED';
-            logMessage = `Mail delivery failed. Error: ${mailError.message}`;
         }
 
-        // Generate token using email instead of id
         const token = generateToken(newUser.rows[0].email);
-
         res.cookie('token', token, cookieOptions);
         
         return res.status(201).json({ 
@@ -125,9 +117,7 @@ export const loginUser = async (req, res) => {
             return res.status(400).json({ error: 'Invalid credentials' });
         }
 
-        // Generate token using email instead of id
         const token = generateToken(userData.email);
-
         res.cookie('token', token, cookieOptions);
         
         return res.status(200).json({ 
@@ -145,13 +135,9 @@ export const loginUser = async (req, res) => {
     }
 };
 
-/**
- * Updates the user's password using their email context.
- * Assumes your auth middleware attaches the user data via req.user.email
- */
 export const updatePassword = async (req, res) => {
     const { newPassword } = req.body;
-    const userEmail = req.user?.email; // Gathered from decoded JWT token payload
+    const userEmail = req.user?.email;
 
     if (!userEmail) {
         return res.status(401).json({ error: 'Unauthorized Access' });
@@ -169,17 +155,27 @@ export const updatePassword = async (req, res) => {
     }
 
     try {
-        const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+        // 1. Fetch current database profile record to verify history string
+        const userQuery = await pool.query('SELECT password FROM users WHERE email = $1', [userEmail]);
+        
+        if (userQuery.rows.length === 0) {
+            return res.status(404).json({ error: 'User account not found' });
+        }
 
-        // Targeted WHERE update rule changed from id to email
+        // 2. Prevent reuse of the generated temporary password string
+        const isSameAsGenerated = await bcrypt.compare(newPassword, userQuery.rows[0].password);
+        if (isSameAsGenerated) {
+            return res.status(400).json({ 
+                error: 'Your new password cannot be identical to the system-generated temporary password.' 
+            });
+        }
+
+        // 3. Process safe update
+        const hashedNewPassword = await bcrypt.hash(newPassword, 10);
         const updateResult = await pool.query(
             'UPDATE users SET password = $1, is_password_changed = true WHERE email = $2 RETURNING email, is_password_changed',
             [hashedNewPassword, userEmail]
         );
-
-        if (updateResult.rows.length === 0) {
-            return res.status(404).json({ error: 'User account not found' });
-        }
 
         return res.status(200).json({ 
             message: "Password changed successfully.",
