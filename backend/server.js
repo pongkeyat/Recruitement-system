@@ -8,6 +8,7 @@ import qualificationsRoutes from './qualifications/qualifications.routes.js'
 import remarksRoute from './remarks/remarks.routes.js'
 import fullApplicationRoutes from './applications/applications.route.js'
 import screeningRoutes from './screening/screening.route.js'
+import assesmentRoutes from './assesment/assesment.route.js'
 
 dotenv.config();
 const app = express();
@@ -27,6 +28,7 @@ app.use('/api/qualifications', qualificationsRoutes);
 app.use('/api/remarks', remarksRoute);
 app.use('/api/applications', fullApplicationRoutes);
 app.use('/api/screening', screeningRoutes);
+app.use('/api/assesment', assesmentRoutes);
 
 
 const PORT = process.env.PORT || 5000;

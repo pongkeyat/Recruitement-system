@@ -1,7 +1,11 @@
 import dotenv from "dotenv";
 dotenv.config();
-
 import nodemailer from "nodemailer";
+import dns from "dns";
+
+// CRITICAL FIX: Forces Node.js to prioritize IPv4 over IPv6.
+// This prevents the "connect ETIMEDOUT" network error with Gmail.
+dns.setDefaultResultOrder('ipv4first');
 
 const transporter = nodemailer.createTransport({
     service: "gmail",

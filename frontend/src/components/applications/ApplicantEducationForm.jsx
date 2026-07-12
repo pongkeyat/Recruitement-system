@@ -2,7 +2,7 @@ import React from 'react';
 
 export default function ApplicantEducationForm({ data, onChange }) {
   const educationList = data.educationList || [
-    { level: '', school_name: '', degree_course: '', from_year: '', to_year: '', honors_awards: '' }
+    { level: '', school_name: '', degree_course:  '', honors_awards: '' }
   ];
 
   const handleInputChange = (index, fieldName, value) => {
@@ -79,15 +79,6 @@ export default function ApplicantEducationForm({ data, onChange }) {
                 <input type="text" value={edu.degree_course || ''} onChange={(e) => handleInputChange(index, 'degree_course', e.target.value)} className="w-full h-10 px-3 border border-gray-300 rounded-lg text-sm" />
               </div>
 
-              <div className="md:col-span-1 space-y-1">
-                <label className="block text-xs font-semibold text-gray-700">From</label>
-                <input type="date" value={edu.from_year || ''} onChange={(e) => handleInputChange(index, 'from_year', e.target.value)} className="w-full h-10 px-2 border border-gray-300 rounded-lg text-sm" />
-              </div>
-
-              <div className="md:col-span-1 space-y-1">
-                <label className="block text-xs font-semibold text-gray-700">To</label>
-                <input type="date" value={edu.to_year || ''} onChange={(e) => handleInputChange(index, 'to_year', e.target.value)} className="w-full h-10 px-2 border border-gray-300 rounded-lg text-sm" />
-              </div>
 
               {/* Honors and Delete button integrated into the grid for better alignment */}
               <div className="md:col-span-11 space-y-1">

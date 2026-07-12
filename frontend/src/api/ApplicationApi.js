@@ -31,3 +31,34 @@ export const getApplicationById = async (id) => {
     const res = await axios.get(`${baseUrl}/${id}`);
     return res.data;
 };
+
+export const getApplicationsByVacancyId = async (vacancyId) => {
+    if (!vacancyId) return [];
+    try {
+        const res = await axios.get(GET_APPLICATIONS);
+        const payload = res.data;
+
+        let rows = [];
+        if (Array.isArray(payload)) rows = payload;
+        else if (Array.isArray(payload.data)) rows = payload.data;
+        else if (Array.isArray(payload.rows)) rows = payload.rows;
+        else if (Array.isArray(payload.applications)) rows = payload.applications;
+
+        // 1. Filter by vacancy_id
+        const filtered = rows.filter(r => String(r.vacancy_id) === String(vacancyId));
+
+        // 2. Map the data cleanly for your modal dropdown
+        return filtered.map(r => ({
+            ...r,
+            // Point the modal's expected singular key to your actual backend plural property
+            job_application_id: r.job_applications_id, 
+            
+            // Build the string your dropdown uses to show the applicant's name
+            candidate_name: r.first_name ? `${r.first_name} ${r.last_name || ''}`.trim() : null
+        }));
+        
+    } catch (error) {
+        console.error(`Error filtering applications for vacancy ${vacancyId}:`, error.message);
+        return [];
+    }
+};

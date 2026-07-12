@@ -1,6 +1,9 @@
 import dotenv from "dotenv";
 dotenv.config();
 import nodemailer from "nodemailer";
+import dns from "dns";
+
+dns.setDefaultResultOrder('ipv4first');
 
 const transporter = nodemailer.createTransport({
     service: "gmail",
@@ -13,7 +16,6 @@ const transporter = nodemailer.createTransport({
     },
 });
 
-// Verify SMTP connection when the server starts
 transporter.verify((error, success) => {
     if (error) {
         console.error("❌ Nodemailer Error:", error);
@@ -22,14 +24,10 @@ transporter.verify((error, success) => {
     }
 });
 
-/**
- * Sends an initial screening result email.
- * @param {string} email - The applicant's email address.
- * @param {string} name - The applicant's name (optional, falls back to email if not provided).
- * @param {'qualified' | 'disqualified'} status - The screening status.
- */
 export const ScreeningResultEmail = async (email, name, status) => {
-    const isQualified = status.toLowerCase() === "qualified";
+    // Standardize the status string safely
+    const currentStatus = String(status || '').trim().toLowerCase();
+    const isQualified = currentStatus === "qualified";
     
     const subject = isQualified 
         ? "DEPED Recruitment - Initial Screening Update: Qualified" 
@@ -49,16 +47,14 @@ export const ScreeningResultEmail = async (email, name, status) => {
         subject: subject,
         html: `
             <h2>${heading}</h2>
-
             <p>Dear ${name || email},</p>
-
             ${messageBody}
-
             <br>
             <p>Best regards,</p>
             <strong>DEPED Recruitment Team</strong>
         `,
     };
 
+    // Typo fixed here:
     return transporter.sendMail(mailOptions);
 };

@@ -18,6 +18,7 @@ import Qualified from '../pages/Qualified';
 import Disqualified from '../pages/Disqualified';
 import ProtectedRoute from './ProtectedRoutes';
 import { useAuth } from '../context/AuthContext';
+import AssesmentSession from '../pages/AssesmentSession';
 
 
 function AppLayout() {
@@ -74,6 +75,7 @@ export default function PublicRoutes() {
         <Route path="/usermanagement" element={<UserManagement />} />
         <Route path='/Qualified' element={<Qualified />} />
         <Route path='/Disqualified' element={<Disqualified />} />
+        <Route path='/Assesment' element={<AssesmentSession/>} />
         
 
         </Route>

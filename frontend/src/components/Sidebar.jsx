@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { 
   LayoutDashboard, 
@@ -7,18 +7,40 @@ import {
   FolderDown, 
   FileText, 
   ClipboardCheck, 
-  UserCheck, 
-  UserX,
-  LogOut,
-  UserRoundCheck,
-  UserRoundX,
-  User
-
+  UserRoundCheck, 
+  UserRoundX, 
+  User 
 } from 'lucide-react';
+
+// Import your AuthContext here (Adjust path based on your file structure)
+// import { AuthContext } from '../context/AuthContext'; 
+
+const ROLES = {
+  ADMIN: 'admin',
+  HRO: 'hro',
+  HRMPSB: 'hrmpsb'
+};
+
+// Simple client-side JWT parser utility to read payload role safely
+const parseJwt = (token) => {
+  try {
+    return JSON.parse(atob(token.split('.')[1]));
+  } catch (e) {
+    return null;
+  }
+};
 
 export default function SideBar() {
   const navigate = useNavigate();
   const location = useLocation();
+  
+  // Consume token and role from Auth Context
+  // const { token, user } = useContext(AuthContext);
+  
+  // Example Extracting: extracting role directly from user object or decoding JWT token string
+  // const decoded = parseJwt(token);
+  // const userRole = user?.role || decoded?.role || 'admin'; 
+  const userRole = 'admin'; // Default fallback token-role placement for testing
 
   const handleLogout = () => {
     navigate('/');
@@ -29,43 +51,71 @@ export default function SideBar() {
   const menuSections = [
     {
       title: "VACANCY MANAGEMENT",
+      roles: [ROLES.ADMIN], 
       items: [
         { label: "Vacancy Postings", to: "/vacancyPosting", icon: Briefcase },
         { label: "Post New Vacancy", to: "/postVacancy", icon: PlusCircle },
       ]
     },
-        {
+    {
       title: "APPLICATIONS",
+      roles: [ROLES.HRO], 
       items: [
         { label: "Receive Application", to: "/receiveApplicant", icon: FolderDown },
         { label: "All Applications", to: "/allApplications", icon: FileText },
       ]
     },
-     {
+    {
       title: "SCREENING",
+      roles: [ROLES.HRO], 
       items: [
         { label: "Initial Screening", to: "/initialScreening", icon: ClipboardCheck },
         { label: "Qualified", to: "/Qualified", icon: UserRoundCheck },
         { label: "Disqualified", to: "/Disqualified", icon: UserRoundX },
       ]
     },
-         {
+    {
+      title: "ASSESSMENT",
+      roles: [ROLES.HRMPSB], 
+      items: [
+        { label: "Assessment Session", to: "/Assesment", icon: ClipboardCheck },
+      ]
+    },
+    {
       title: "ADMIN",
+      roles: [ROLES.ADMIN], 
       items: [
         { label: "User Management", to: "/usermanagement", icon: User },
       ]
     },
-
-
   ];
 
+  // Modified Filter Logic: If the role is admin, skip role validation and show EVERYTHING
+  const currentRoleNormalized = userRole ? userRole.toLowerCase() : '';
+  const filteredSections = menuSections.filter(section => 
+    currentRoleNormalized === ROLES.ADMIN || section.roles.includes(currentRoleNormalized)
+  );
+
+  const getProfileDetails = () => {
+    switch(currentRoleNormalized) {
+      case ROLES.ADMIN:
+        return { title: "System Administrator", subtitle: "Super Administrator", avatar: "A" };
+      case ROLES.HRO:
+        return { title: "Human Resource Officer", subtitle: "HR Operations", avatar: "H" };
+      case ROLES.HRMPSB:
+        return { title: "HRMPSB Member", subtitle: "Selection Board", avatar: "B" };
+      default:
+        return { title: "System User", subtitle: "Authenticated Profile", avatar: "U" };
+    }
+  };
+
+  const { title: displayTitle, subtitle: displaySubtitle, avatar: displayAvatar } = getProfileDetails();
+
   return (
-    /* 1. MAIN CONTAINER: Controlled height, NO overflow-y-auto here to prevent double scrollbars */
-    <nav className="flex flex-col  h-screen bg-[#112244] text-slate-300 border-r border-white/5 font-sans select-none">
+    <nav className="flex flex-col h-screen bg-[#112244] text-slate-300 border-r border-white/5 font-sans select-none">
       
       {/* BRAND HEADER */}
       <div className="flex items-center gap-3 p-4 border-b border-white/5 flex-shrink-0">
-  
         <div className="flex flex-col min-w-0">
           <span className="text-[14px] font-bold text-white tracking-wide truncate">Region 1</span>
           <span className="text-[11px] text-slate-400 font-medium">Ranking System v1.0.0</span>
@@ -75,21 +125,19 @@ export default function SideBar() {
       {/* USER PROFILE CARD */}
       <div className="p-3 mx-3 mt-4 mb-2 rounded-xl bg-white/[0.04] border border-white/[0.03] flex items-center gap-3 flex-shrink-0">
         <div className="w-9 h-9 rounded-full bg-amber-500 flex items-center justify-center text-slate-900 font-bold text-sm shadow-md flex-shrink-0">
-          S
+          {displayAvatar}
         </div>
         <div className="flex flex-col min-w-0">
-          <span className="text-[13px] font-semibold text-white truncate">System Administrator</span>
+          <span className="text-[13px] font-semibold text-white truncate">{displayTitle}</span>
           <span className="text-[11px] text-slate-400 flex items-center gap-1">
             <span className="inline-block w-3 h-3 rounded-full bg-emerald-500/20 border border-emerald-500/50 text-[8px] text-emerald-400 text-center leading-3">✓</span> 
-            Super Administrator
+            {displaySubtitle}
           </span>
         </div>
       </div>
 
-      {/* 2. INNER SCROLL AREA: Only this middle section will scroll if the menu gets too tall */}
+      {/* INNER SCROLL AREA */}
       <div className="flex-1 px-3 py-3 space-y-5 overflow-y-auto custom-scrollbar">
-        
-        {/* Dashboard Link */}
         <div>
           <Link
             to="/dashboard"
@@ -104,8 +152,8 @@ export default function SideBar() {
           </Link>
         </div>
 
-        {/* Dynamic Sections */}
-        {menuSections.map((section, idx) => (
+        {/* Dynamic RBAC Sections */}
+        {filteredSections.map((section, idx) => (
           <div key={idx} className="space-y-1">
             <div className="px-3 text-[10px] font-bold tracking-wider text-slate-500 mb-1">
               {section.title}
@@ -131,9 +179,6 @@ export default function SideBar() {
           </div>
         ))}
       </div>
-
-
-
     </nav>
   );
 }
