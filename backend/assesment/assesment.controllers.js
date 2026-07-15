@@ -71,17 +71,38 @@ export const getInterviewSessions = async (req, res) => {
     try {
         // Query reads directly from interview_sessions table without aliases or extra joins
         const queryText = `
-            SELECT 
-              
-                vacancy_id,
-                job_applications_id,
-                -- Formats date to standard YYYY-MM-DD string matching frontend expectations
-                TO_CHAR(session_date, 'YYYY-MM-DD') AS session_date,
-                venue,
-                conducted_by, 
-                remarks
+            SELECT
+                interview_sessions.session_id,
+                interview_sessions.vacancy_id,
+                interview_sessions.job_applications_id,
+
+                vacancies.position_title,
+
+                applicant_information.first_name,
+                applicant_information.middle_name,
+                applicant_information.last_name,
+                applicant_information.suffix,
+
+                TO_CHAR(interview_sessions.session_date, 'YYYY-MM-DD') AS session_date,
+
+                interview_sessions.venue,
+                interview_sessions.conducted_by,
+                interview_sessions.remarks
+
             FROM interview_sessions
-            ORDER BY session_date  DESC;
+
+            INNER JOIN job_applications
+                ON job_applications.job_applications_id = interview_sessions.job_applications_id
+
+            INNER JOIN applicant_information
+                ON applicant_information.job_applications_id = job_applications.job_applications_id
+
+            INNER JOIN vacancies
+                ON vacancies.vacancy_id = job_applications.vacancy_id
+
+            ORDER BY
+                applicant_information.last_name,
+                applicant_information.first_name;
         `;
 
         const result = await pool.query(queryText);
@@ -96,3 +117,4 @@ export const getInterviewSessions = async (req, res) => {
         return res.status(500).json({ error: 'Internal server error' });
     }
 };
+

@@ -19,6 +19,9 @@ import Disqualified from '../pages/Disqualified';
 import ProtectedRoute from './ProtectedRoutes';
 import { useAuth } from '../context/AuthContext';
 import AssesmentSession from '../pages/AssesmentSession';
+import CalendarView from '../pages/CalendarView.';
+import CalendarParent from '../components/assesment/CalendarParent';
+import Scoring from '../pages/Scoring';
 
 
 function AppLayout() {
@@ -76,6 +79,8 @@ export default function PublicRoutes() {
         <Route path='/Qualified' element={<Qualified />} />
         <Route path='/Disqualified' element={<Disqualified />} />
         <Route path='/Assesment' element={<AssesmentSession/>} />
+        <Route path='/Interview-date' element={<CalendarParent />} />
+        <Route path='/Scoring' element={<Scoring />} />
         
 
         </Route>

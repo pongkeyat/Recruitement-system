@@ -10,6 +10,32 @@ export default function AssessmentTable({ data }) {
     );
   }
 
+  // Helper function to handle arrays, objects, or stringified versions like {"kath","jake"}
+  const formatConductedBy = (value) => {
+    if (!value) return '--';
+
+    // 1. If it's a real JavaScript Array
+    if (Array.isArray(value)) {
+      return value.join(', ');
+    }
+
+    // 2. If it's a string, clean up brackets, curly braces, and quotes
+    if (typeof value === 'string') {
+      // Strips out {, }, [, ], ", and ' characters
+      const cleaned = value.replace(/[{}[\]"']/g, '').trim();
+      
+      // Split by commas, clean up whitespace around names, and join back with space
+      return cleaned
+        .split(',')
+        .map(name => name.trim())
+        .filter(Boolean)
+        .join(', ');
+    }
+
+    // 3. Fallback for any other type
+    return String(value);
+  };
+
   return (
     <div className="overflow-x-auto border border-slate-100 rounded-lg">
       <table className="w-full text-left text-xs border-collapse">
@@ -46,9 +72,7 @@ export default function AssessmentTable({ data }) {
               </td>
               <td className="py-4 px-4">
                 <div className="text-[11px] font-medium text-slate-700">
-                  {Array.isArray(session.conducted_by) 
-                    ? session.conducted_by.join(', ') 
-                    : String(session.conducted_by || '')}
+                  {formatConductedBy(session.conducted_by)}
                 </div>
               </td>
               <td className="py-4 px-4 text-slate-400 italic text-[11px]">

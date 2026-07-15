@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { 
   LayoutDashboard, 
@@ -9,11 +9,11 @@ import {
   ClipboardCheck, 
   UserRoundCheck, 
   UserRoundX, 
-  User 
+  User,
+  CalendarCheck ,
+  CirclePlus
 } from 'lucide-react';
-
-// Import your AuthContext here (Adjust path based on your file structure)
-// import { AuthContext } from '../context/AuthContext'; 
+import { useAuth } from '../context/AuthContext';
 
 const ROLES = {
   ADMIN: 'admin',
@@ -33,14 +33,21 @@ const parseJwt = (token) => {
 export default function SideBar() {
   const navigate = useNavigate();
   const location = useLocation();
-  
-  // Consume token and role from Auth Context
-  // const { token, user } = useContext(AuthContext);
-  
-  // Example Extracting: extracting role directly from user object or decoding JWT token string
-  // const decoded = parseJwt(token);
-  // const userRole = user?.role || decoded?.role || 'admin'; 
-  const userRole = 'admin'; // Default fallback token-role placement for testing
+  const { user, token } = useAuth();
+
+  const decodedToken = token ? parseJwt(token) : null;
+
+  const rawRole =
+    user?.role ||
+    user?.user?.role ||
+    user?.roleName ||
+    user?.userRole ||
+    decodedToken?.role ||
+    decodedToken?.user?.role ||
+    decodedToken?.roles?.[0] ||
+    '';
+
+  const userRole = typeof rawRole === 'string' ? rawRole : '';
 
   const handleLogout = () => {
     navigate('/');
@@ -79,6 +86,9 @@ export default function SideBar() {
       roles: [ROLES.HRMPSB], 
       items: [
         { label: "Assessment Session", to: "/Assesment", icon: ClipboardCheck },
+        { label: "Calendar", to: "/Interview-date", icon: CalendarCheck },
+        { label: "Score", to: "/Scoring", icon: CirclePlus },
+
       ]
     },
     {
@@ -90,14 +100,15 @@ export default function SideBar() {
     },
   ];
 
-  // Modified Filter Logic: If the role is admin, skip role validation and show EVERYTHING
   const currentRoleNormalized = userRole ? userRole.toLowerCase() : '';
-  const filteredSections = menuSections.filter(section => 
-    currentRoleNormalized === ROLES.ADMIN || section.roles.includes(currentRoleNormalized)
+  const normalizedRole = currentRoleNormalized.replace(/^role_/, '').replace(/\s+/g, '');
+
+  const filteredSections = menuSections.filter(section =>
+    normalizedRole === ROLES.ADMIN || section.roles.includes(normalizedRole)
   );
 
   const getProfileDetails = () => {
-    switch(currentRoleNormalized) {
+    switch(normalizedRole) {
       case ROLES.ADMIN:
         return { title: "System Administrator", subtitle: "Super Administrator", avatar: "A" };
       case ROLES.HRO:

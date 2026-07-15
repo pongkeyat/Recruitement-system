@@ -158,7 +158,8 @@ function Applications({ formData, onChange }) {
                     type="text"
                     readOnly
                     value={form.receivedBy}
-                    className="w-full h-[50px] rounded-xl border border-gray-300 bg-[#F8FAFC] px-5 text-[16px]"
+                    disabled = {true}
+                    className="w-full h-[50px] rounded-xl border border-gray-700 bg-[#F8FAFC] px-5 text-[16px]"
                 />
                 </div>
 
@@ -172,7 +173,8 @@ function Applications({ formData, onChange }) {
                     type="text"
                     readOnly
                     value={form.submissionType}
-                    className="w-full h-[50px] rounded-xl border border-gray-300 bg-[#F8FAFC] px-5 text-[16px]"
+                    disabled = {true}
+                    className="w-full h-[50px] rounded-xl border border-gray-700 bg-[#F8FAFC] px-5 text-[16px]"
                 />
                 </div>
             </div>

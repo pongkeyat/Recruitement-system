@@ -51,6 +51,20 @@ export default function DocumentChecklist({ documents, onChange }) {
     ],
   };
 
+  // Extract all keys to easily evaluate global state
+  const allKeys = Object.keys(documentLabels);
+  
+  // Check if every single document is currently checked
+  const isAllChecked = allKeys.every((key) => documents[key] === true);
+
+  // Handle mass toggling
+  const handleSelectAllToggle = (e) => {
+    const targetValue = e.target.checked;
+    allKeys.forEach((key) => {
+      onChange(key, targetValue);
+    });
+  };
+
   return (
     <div className="bg-white rounded-3xl border border-gray-200 shadow-sm overflow-hidden font-sans">
       {/* Header Banner Section */}
@@ -68,9 +82,19 @@ export default function DocumentChecklist({ documents, onChange }) {
         </div>
       </div>
       
-      {/* Subheader / Instruction Bar */}
-      <div className="bg-[#163664] px-5 py-2 text-white/90 text-sm border-t border-white/10">
-        Track and verify all submitted physical or digital documents.
+      {/* Subheader / Instruction Bar with "Check All" functionality */}
+      <div className="bg-[#163664] px-5 py-2.5 text-white/90 text-sm border-t border-white/10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+        <span>Track and verify all submitted physical or digital documents.</span>
+        
+        <label className="flex items-center gap-2 cursor-pointer select-none bg-white/10 hover:bg-white/20 px-3 py-1 rounded-lg transition-colors text-xs font-medium self-start sm:self-auto">
+          <input
+            type="checkbox"
+            checked={isAllChecked}
+            onChange={handleSelectAllToggle}
+            className="w-3.5 h-3.5 text-[#1e4a8a] border-white/30 rounded focus:ring-0 focus:ring-offset-0 cursor-pointer accent-[#1e4a8a]"
+          />
+          <span>{isAllChecked ? "Uncheck All" : "Check All"}</span>
+        </label>
       </div>
 
       {/* Grid Content Background */}

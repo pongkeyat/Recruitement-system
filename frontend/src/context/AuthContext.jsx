@@ -52,10 +52,10 @@ export const AuthProvider = ({ children }) => {
     let finalProfile = profile
 
     if (profile) {
-      setUser(profile)
+      setUser(profile.user)
     } else {
       const fetched = await getProfile(authToken)
-      setUser(fetched)
+      setUser(fetched.user)
       finalProfile = fetched // Store the fresh data from the API
     }
 

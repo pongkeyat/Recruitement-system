@@ -23,7 +23,14 @@ export default function ApplicantForm({ formData, onChange }) {
   const form = formData ?? internal;
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
+    let { name, value } = e.target;
+
+    // Contact number validation: Only allow up to 11 digits
+    if (name === "contactNumber") {
+      const numericValue = value.replace(/\D/g, ""); // Remove non-digits
+      if (numericValue.length > 11) return;          // Stop typing beyond 11 digits
+      value = numericValue;
+    }
 
     if (onChange) onChange(name, value);
     else setInternal((prev) => ({ ...prev, [name]: value }));
@@ -41,21 +48,15 @@ export default function ApplicantForm({ formData, onChange }) {
 
       {/* HEADER */}
       <div className="bg-[#204a87] px-5 py-3 flex items-center justify-between">
-
         <div className="flex items-center gap-3">
-
           <div className="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center text-sm font-bold text-white">
             2
           </div>
-
           <User size={17} className="text-white" />
-
           <h2 className="font-semibold text-lg text-white">
             Applicant Information
           </h2>
-
         </div>
-
         <button
           type="button"
           className="flex items-center gap-2 rounded-md bg-white px-4 py-2 text-sm text-slate-800 shadow hover:bg-slate-100"
@@ -63,7 +64,6 @@ export default function ApplicantForm({ formData, onChange }) {
           <Search size={17} />
           Search Existing Applicant
         </button>
-
       </div>
 
       {/* BODY */}
@@ -71,7 +71,6 @@ export default function ApplicantForm({ formData, onChange }) {
 
         {/* FIRST ROW */}
         <div className="grid grid-cols-12 gap-4">
-
           {/* LAST NAME */}
           <div className="col-span-12 md:col-span-4">
             <label className="block mb-2 text-sm font-medium text-slate-700">
@@ -136,12 +135,10 @@ export default function ApplicantForm({ formData, onChange }) {
               <option value="IV">IV</option>
             </select>
           </div>
-
         </div>
 
         {/* SECOND ROW */}
         <div className="grid grid-cols-12 gap-4">
-
           {/* SEX */}
           <div className="col-span-12 md:col-span-3">
             <label className="block mb-2 text-sm font-medium text-slate-700">
@@ -170,7 +167,8 @@ export default function ApplicantForm({ formData, onChange }) {
               value={form.dob ?? ""}
               onChange={handleChange}
               className={input}
-            />
+            >
+            </input>
           </div>
 
           {/* CIVIL STATUS */}
@@ -205,7 +203,7 @@ export default function ApplicantForm({ formData, onChange }) {
                 />
               </div>
               <input
-                type="number"
+                type="tel"
                 name="contactNumber"
                 value={form.contactNumber ?? ""}
                 onChange={handleChange}
@@ -214,7 +212,6 @@ export default function ApplicantForm({ formData, onChange }) {
               />
             </div>
           </div>
-
         </div>
 
         {/* EMAIL */}

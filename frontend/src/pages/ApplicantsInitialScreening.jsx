@@ -1,55 +1,63 @@
-import { useCallback, useEffect, useState } from "react";
-import AssessmentHeader from "../components/assesment/AssesmentHeader";
-import AssessmentDashboard from "../components/assesment/AssesmentDashboard";
-import AssessmentStats from "../components/assesment/AssesmentStats";
-import { getInterviewSessions, postAssessmentSession } from "../api/AssesmentApi";
+import { useParams, useNavigate } from "react-router-dom";
+import { useEffect, useState, useCallback } from "react";
+import { getApplicationById } from "../api/ApplicationApi";
+//import ApplicantsByIdHeader from "../components/initialscreening/ApplicantsByIdHeader";
+import ApplicantSummaryCard from "../components/initialscreening/ApplicantSummaryCard";
+import ApplicantEvaluation from "../components/initialscreening/ApplicantEvaluation";
 
-export default function AssesmentSession () {
-    const [sessions, setSessions] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState("");
+export default function ApplicantsInitialScreening() {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  
+  const [application, setApplication] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-    const loadSessions = useCallback(async () => {
-        setLoading(true);
-        setError("");
-        try {
-            const response = await getInterviewSessions();
-            setSessions(Array.isArray(response?.sessions) ? response.sessions : []);
-        } catch (err) {
-            console.error("Could not load assessment sessions", err);
-            setSessions([]);
-            setError("Unable to load assessment sessions. Please try again.");
-        } finally {
-            setLoading(false);
-        }
-    }, []);
+  const loadApplication = useCallback(async () => {
+    if (!id) return;
+    try {
+      setLoading(true);
+      const data = await getApplicationById(id);
+      setApplication(data?.data || data);
+    } catch (err) {
+      console.error("Failed to load application data:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, [id]);
 
-    useEffect(() => {
-        loadSessions();
-    }, [loadSessions]);
+  useEffect(() => {
+    loadApplication();
+  }, [loadApplication]);
 
-    const handleSaveSession = async (formData) => {
-        // Sends form payload to your backend Axios post endpoint
-        await postAssessmentSession(formData);
-        // Automatically triggers a data re-fetch from the DB so the table updates instantly
-        await loadSessions();
-    };
-
+  if (loading) {
     return (
-        <div className="flex flex-col min-h-screen w-full bg-[#f4f6f9]">
-            {/* Header hooks modal actions directly into the data re-fetch handler */}
-            <AssessmentHeader onSaveSession={handleSaveSession} />
-            
-            {/* Core Workspace Layout Area */}
-            <main className="flex-1 overflow-y-auto p-6 space-y-6">
-                
-                {/* Unified Workspace View with Props Injected */}
-                <div className="w-full space-y-5">
-                    <AssessmentStats count={sessions.length} loading={loading} />
-                    <AssessmentDashboard data={sessions} loading={loading} error={error} />
-                </div>
-
-            </main>
-        </div>
+      <div className="bg-white rounded-3xl shadow-sm border border-gray-200 p-8 flex justify-center items-center text-gray-500">
+        Loading applicant details...
+      </div>
     );
+  }
+
+  if (!application) {
+    return (
+      <div className="bg-white rounded-3xl shadow-sm border border-gray-200 p-8 text-center text-red-500 font-semibold">
+        Application not found.
+      </div>
+    );
+  }
+
+  return (
+    <div className="w-full h-full flex flex-col gap-6 p-6  min-h-screen">
+      {/*
+      <ApplicantsByIdHeader 
+        application={application} 
+        onBack={() => navigate(-1)} 
+        onViewApplication={() => navigate(`/applicants/${id}/full-view`)} 
+      />
+      */}
+
+      <ApplicantSummaryCard application={application} />
+
+       <ApplicantEvaluation applicant={application} />
+    </div>
+  );
 }

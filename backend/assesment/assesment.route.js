@@ -8,9 +8,6 @@ const router = express.Router();
 
 // Route for creating a session and getting all sessions
 router.post("/post-interview-sessions", postInterviewSession);
-router.get("/get-interview-sessions", getInterviewSessions)
-
-
-
+router.get("/get-interview-sessions", getInterviewSessions);
 
 export default router;

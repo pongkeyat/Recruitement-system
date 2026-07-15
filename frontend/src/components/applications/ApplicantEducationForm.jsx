@@ -61,11 +61,11 @@ export default function ApplicantEducationForm({ data, onChange }) {
                   className="w-full h-10 px-3 border border-gray-300 rounded-lg text-sm bg-white"
                 >
                   <option value="">-- Select --</option>
-                  <option value="ELEMENTARY">ELEMENTARY</option>
-                  <option value="SECONDARY">SECONDARY</option>
+                  <option value="HIGH SCHOOL">HIGH SCHOOL</option>
+                  <option value="UNDERGRADUATE">UNDERGRADUATE</option>
                   <option value="VOCATIONAL">VOCATIONAL</option>
-                  <option value="COLLEGE">COLLEGE</option>
-                  <option value="GRADUATE STUDIES">GRADUATE STUDIES</option>
+                  <option value="POSTGRADUATE">POSTGRADUATE</option>
+                  <option value="DOCTORAL">DOCTORAL</option>
                 </select>
               </div>
 
