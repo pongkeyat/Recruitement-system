@@ -45,7 +45,16 @@ export default function ScoreEntryHeader({
 
         const data = await getInterviewSessions();
 
+        // DEBUG
+        console.log("========== API RESPONSE ==========");
+        console.log(data);
+        console.log("==================================");
+
         const grouped = groupSessions(data?.sessions || []);
+
+        console.log("========== GROUPED SESSIONS ==========");
+        console.log(grouped);
+        console.log("======================================");
 
         setSessions(grouped);
       } catch (err) {
@@ -98,7 +107,7 @@ export default function ScoreEntryHeader({
                 setSelectedSession(e.target.value);
                 setSelectedApplicant(null);
               }}
-              className="appearance-none w-full rounded-xl border border-slate-300 bg-slate-50 px-4 py-3 pr-12 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#203D73] cursor-pointer text-slate-800 transition-all"
+              className="appearance-none w-full rounded-xl border border-slate-300 bg-slate-50 px-4 py-3 pr-12 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#203D73]"
             >
               <option value="">Select Assessment Session...</option>
 
@@ -122,9 +131,15 @@ export default function ScoreEntryHeader({
           applicants={applicants}
           selectedApplicant={selectedApplicant}
           onApplicantChange={(applicant) => {
-            setSelectedApplicant(applicant);
 
-            console.log("Selected Applicant:", applicant);
+            console.log("========== SELECTED APPLICANT ==========");
+            console.log(applicant);
+            console.log("Applicant ID:", applicant.applicant_id);
+            console.log("Job Application ID:", applicant.job_applications_id);
+            console.log("Session ID:", applicant.session_id);
+            console.log("========================================");
+
+            setSelectedApplicant(applicant);
           }}
         />
       )}

@@ -72,16 +72,18 @@ export const getInterviewSessions = async (req, res) => {
         // Query reads directly from interview_sessions table without aliases or extra joins
         const queryText = `
             SELECT
-                interview_sessions.session_id,
-                interview_sessions.vacancy_id,
-                interview_sessions.job_applications_id,
+            interview_sessions.session_id,
+            interview_sessions.vacancy_id,
+            interview_sessions.job_applications_id,
 
-                vacancies.position_title,
+            applicant_information.applicant_id,
 
-                applicant_information.first_name,
-                applicant_information.middle_name,
-                applicant_information.last_name,
-                applicant_information.suffix,
+            vacancies.position_title,
+
+            applicant_information.first_name,
+            applicant_information.middle_name,
+            applicant_information.last_name,
+            applicant_information.suffix,
 
                 TO_CHAR(interview_sessions.session_date, 'YYYY-MM-DD') AS session_date,
 

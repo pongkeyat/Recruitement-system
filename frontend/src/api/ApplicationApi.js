@@ -3,6 +3,7 @@ import axios from 'axios';
 const POST_APPLICATIONS = import.meta.env.VITE_APPLICATIONS_POST;
 const GET_APPLICATIONS = import.meta.env.VITE_APPLICATIONS_GET;
 const GET_APPLICATIONS_BY_ID = import.meta.env.VITE_APPLICATIONS_GET_BY_ID;
+const VITE_APPLICATIONS_QUALIFICATIONS = import.meta.env.VITE_APPLICATIONS_QUALIFICATIONS;
 
 export const postApplications = async (application_form) => {
     const res = await axios.post(POST_APPLICATIONS, application_form);
@@ -60,5 +61,24 @@ export const getApplicationsByVacancyId = async (vacancyId) => {
     } catch (error) {
         console.error(`Error filtering applications for vacancy ${vacancyId}:`, error.message);
         return [];
+    }
+};
+
+
+const POST_APPLICANT_QUALIFICATIONS = import.meta.env.VITE_APPLICATIONS_QUALIFICATIONS;
+
+export const postApplicantQualifications = async (qualificationsData) => {
+    try {
+        // Ensure you have the required applicant_id in the payload
+        if (!qualificationsData.applicant_id) {
+            throw new Error("Applicant ID is required to save qualifications.");
+        }
+
+        const res = await axios.post(POST_APPLICANT_QUALIFICATIONS, qualificationsData);
+        return res.data;
+    } catch (error) {
+        console.error("API Error: Failed to post applicant qualifications:", error.response?.data || error.message);
+        // Re-throw the error so the UI component can handle it (e.g., showing a toast notification)
+        throw error;
     }
 };

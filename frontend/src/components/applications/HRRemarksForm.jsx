@@ -44,7 +44,8 @@ export default function HRRemarksForm({ data, onChange }) {
                 className="w-full h-11 px-4 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm bg-white text-gray-700 appearance-none shadow-sm"
               >
                 <option value="">-- Select Status --</option>
-                <option value="Initial Screening">Initial Screening</option>
+                <option value="Complete">Complete</option>
+                <option value="Incomplete">Incomplete</option>
          
               </select>
               <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-500">

@@ -198,14 +198,18 @@ export default function GetVacancies({ onPostVacancy }) {
                                         )}
                                     </td>
                                     <td className="px-6 py-4">
-                                        <div className="flex justify-center gap-2">
-                                            <button className="rounded border border-blue-500 p-2 text-blue-600 hover:bg-blue-50 transition">
-                                                <Eye size={16} />
-                                            </button>
-                                            <button className="rounded border border-amber-500 p-2 text-amber-600 hover:bg-amber-50 transition">
-                                                <Pencil size={16} />
-                                            </button>
-                                        </div>
+                                       <td className="px-6 py-4">
+    <div className="flex flex-col md:flex-row justify-center gap-2">
+        <button className="flex items-center justify-center gap-2 rounded border border-blue-500 px-3 py-2 text-blue-600 hover:bg-blue-50 transition text-sm">
+            <Eye size={16} />
+            <span>View</span>
+        </button>
+        <button className="flex items-center justify-center gap-2 rounded border border-amber-500 px-3 py-2 text-amber-600 hover:bg-amber-50 transition text-sm">
+            <Pencil size={16} />
+            <span>Edit</span>
+        </button>
+    </div>
+</td>
                                     </td>
                                 </tr>
                             ))}

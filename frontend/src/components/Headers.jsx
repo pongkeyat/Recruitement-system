@@ -1,7 +1,8 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+// Adjust the path to where your logo file is actually located
+import depedLogo from "../assets/depedLogo.png"; 
 
-// Destructure isLoggedIn from props so the component can read the login state
 export default function Header({ isLoggedIn }) {
   const navigate = useNavigate();
 
@@ -10,17 +11,19 @@ export default function Header({ isLoggedIn }) {
   };
 
   const handleLogout = () => {
-  navigate('/')
-  }
-
+    // Add logic here to clear auth tokens if needed
+    navigate('/');
+  };
 
   return (
     <div className="w-full bg-gradient-to-b from-[#1e3c72] via-[#112244] to-[#0d1b2a] text-white font-sans relative overflow-hidden flex flex-col">
-      <header className="w-full flex justify-between items-center px-16 py-4 border-b border-white/10 shrink-0">
+      <header className="w-full flex justify-between items-center px-8 py-4  border-b border-white/10 shrink-0">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-amber-500 rounded-full flex items-center justify-center font-bold text-slate-900 text-sm">
-            LU
-          </div>
+          <img 
+            src={depedLogo} 
+            alt="DepEd Logo" 
+            className="w-10 h-10 rounded-full object-cover border border-gray-200"
+          />
 
           <div>
             <h1 className="text-sm font-bold tracking-wide leading-tight">
@@ -32,34 +35,34 @@ export default function Header({ isLoggedIn }) {
           </div>
         </div>
 
-        {/* Only render navigation and login button if user is NOT logged in */}
-        {!isLoggedIn && (
-          <div className="flex items-center gap-8 text-sm text-gray-300">
-            <a
-              href="#vacancies"
-              className="flex items-center gap-1 hover:text-white transition"
+        {/* Navigation and Actions */}
+        <div className="flex items-center gap-8">
+          {!isLoggedIn ? (
+            <>
+              <a
+                href="#vacancies"
+                className="flex items-center gap-1 hover:text-white transition text-sm text-gray-300"
+              >
+                <span>⌂</span>
+                Vacancies
+              </a>
+              <button
+                onClick={handleNavigate}
+                className="border border-white/40 hover:border-white px-4 py-2 rounded-md flex items-center gap-2 text-xs transition"
+              >
+                <span>➜</span>
+                Staff Login
+              </button>
+            </>
+          ) : (
+            <button 
+              onClick={handleLogout}
+              className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition-colors text-xs font-semibold"
             >
-              <span>⌂</span>
-              Vacancies
-            </a>
-
-            <button
-              onClick={handleNavigate}
-              className="border border-white/40 hover:border-white px-4 py-2 rounded-md flex items-center gap-2 text-xs transition"
-            >
-              <span>➜</span>
-              Staff Login
+              Logout
             </button>
-          </div>
-        )}
-
-        {isLoggedIn && (
-          <button onClick={handleLogout}
-            className="mt-auto bg-red-600 text-white py-2 rounded-2xl mx-2 mb-2 hover:bg-red-700 transition-colors text-[13px] font-semibold"
-          >
-            Logout
-          </button>
-        )}
+          )}
+        </div>
       </header>
     </div>
   );

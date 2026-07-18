@@ -4,11 +4,7 @@ import StepProgress from "../components/applications/StepProgress";
 import ApplicantForm from "../components/applications/ApplicantForm";
 import Applications from "../components/applications/Applications";
 import DocumentChecklist from "../components/applications/DocumentChecklist";
-import CivilServiceEligibilityForm from "../components/applications/CivilServiceEligibilityForm";
-import ApplicantEducationForm from "../components/applications/ApplicantEducationForm";
 import EqualOpportunityDeclaration from "../components/applications/EqualOpportunityDeclaration";
-import WorkExperienceForm from "../components/applications/WorkExperienceForm"; 
-import ApplicantTrainingForm from "../components/applications/ApplicantTrainingForm";
 import HRRemarksForm from "../components/applications/HRRemarksForm";
 import { postApplications } from "../api/ApplicationApi";
 
@@ -40,31 +36,6 @@ export default function ReceiveApplications() {
       is_solo_parent: null,
       is_indigenous_person: null
     },
-    // CHANGED: eligibilityData is now an ARRAY (can hold 0, 1, or many entries)
-    eligibilityData: [],
-    educationData: {
-      education_level: "",
-      school_name: "",
-      degree_course: "",
-      honors_awards: ""
-    },
-    workExperienceData: {
-      position_title: "",
-      company_office: "",
-      date_from: "",
-      date_to: "",
-      monthly_salary: "",
-      appointment_status: "",
-      is_govt_service: null 
-    },
-    trainingData: {
-      training_title: "",
-      date_from: "",
-      date_to: "",
-      hours_attended: "",
-      training_type: "",
-      conducted_by: ""
-    },
     hrRemarksData: {
       hr_remarks_notes: "",
       application_status: ""
@@ -87,24 +58,6 @@ export default function ReceiveApplications() {
     setFormData((prev) => ({ ...prev, equalOpportunityData: { ...prev.equalOpportunityData, [name]: value } }));
   };
 
-  // CHANGED: this now just replaces the whole eligibilityData array,
-  // since CivilServiceEligibilityForm calls onChange(newArray) directly.
-  const handleEligibilityChange = (newEligibilityArray) => {
-    setFormData((prev) => ({ ...prev, eligibilityData: newEligibilityArray }));
-  };
-
-  const handleEducationChange = (name, value) => {
-    setFormData((prev) => ({ ...prev, educationData: { ...prev.educationData, [name]: value } }));
-  };
-
-  const handleWorkExperienceChange = (name, value) => {
-    setFormData((prev) => ({ ...prev, workExperienceData: { ...prev.workExperienceData, [name]: value } }));
-  };
-
-  const handleTrainingChange = (name, value) => {
-    setFormData((prev) => ({ ...prev, trainingData: { ...prev.trainingData, [name]: value } }));
-  };
-
   const handleHRRemarksChange = (name, value) => {
     setFormData((prev) => ({
       ...prev,
@@ -116,14 +69,6 @@ export default function ReceiveApplications() {
     e.preventDefault();
     setLoading(true);
     setError(null);
-
-    const eligibilityEntry = Array.isArray(formData.eligibilityData) && formData.eligibilityData.length > 0
-      ? formData.eligibilityData[0]
-      : {};
-
-    const educationEntry = Array.isArray(formData.educationData?.educationList) && formData.educationData.educationList.length > 0
-      ? formData.educationData.educationList[0]
-      : {};
 
     const payload = {
       vacancy_id: formData.applicationData.vacancy_id || null,
@@ -145,36 +90,13 @@ export default function ReceiveApplications() {
 
       ...formData.documentData,
       ...formData.equalOpportunityData,
-
-      // Send the first eligibility row using the exact backend field names
-      eligibility_type: eligibilityEntry.eligibility_type || null,
-      rating: eligibilityEntry.rating || null,
-      date_of_exam: eligibilityEntry.date_of_exam || null,
-      place_of_exam: eligibilityEntry.place_of_exam || null,
-      license_number: eligibilityEntry.license_number || null,
-
-      // Preserve all entries for possible future use
-      eligibilities: formData.eligibilityData,
-
-      education_level: educationEntry.level || formData.educationData?.education_level || "",
-      school_name: educationEntry.school_name || formData.educationData?.school_name || "",
-      degree_course: educationEntry.degree_course || formData.educationData?.degree_course || "",
-      honors_awards: educationEntry.honors_awards || formData.educationData?.honors_awards || "",
-      ...formData.workExperienceData,
-      ...formData.trainingData,
       ...formData.hrRemarksData,
     };
 
-    console.log("🚀 Submitting Full Payload:", payload);
-
     try {
-      const response = await postApplications(payload);
+      await postApplications(payload);
       alert("Application submitted successfully!");
-      console.log("Server Response:", response);
     } catch (err) {
-      console.group("❌ Submission Failed");
-      console.error("Error Message:", err.message);
-      console.groupEnd();
       setError(err.response?.data?.message || "An error occurred during submission.");
     } finally {
       setLoading(false);
@@ -187,45 +109,17 @@ export default function ReceiveApplications() {
       <StepProgress />
       
       <form onSubmit={handleSubmit} className="space-y-6 max-w-5xl mx-auto">
-        {error && (
-          <div className="p-4 bg-red-50 text-red-600 rounded-xl border border-red-200">{error}</div>
-        )}
+        {error && <div className="p-4 bg-red-50 text-red-600 rounded-xl border border-red-200">{error}</div>}
 
         <Applications formData={formData.applicationData} onChange={handleApplicationChange} />
         <ApplicantForm formData={formData.applicantData} onChange={handleApplicantChange} />
-
-        {/* CHANGED: passes the array + the array-setter handler */}
-        <CivilServiceEligibilityForm data={formData.eligibilityData} onChange={handleEligibilityChange} />
-
         <EqualOpportunityDeclaration data={formData.equalOpportunityData} onChange={handleEqualOpportunityChange} />
         <DocumentChecklist documents={formData.documentData} onChange={handleDocumentChange} />
-        
-        <ApplicantEducationForm data={formData.educationData} onChange={handleEducationChange} />
-        
-        <WorkExperienceForm 
-          data={formData.workExperienceData} 
-          onChange={handleWorkExperienceChange} 
-        />
-
-        <ApplicantTrainingForm 
-          data={formData.trainingData} 
-          onChange={handleTrainingChange} 
-        />
-
-        <HRRemarksForm 
-          data={formData.hrRemarksData} 
-          onChange={handleHRRemarksChange} 
-        />
+        <HRRemarksForm data={formData.hrRemarksData} onChange={handleHRRemarksChange} />
 
         <div className="flex justify-end pt-4">
-          <button
-            type="submit"
-            disabled={loading}
-            className={`px-6 py-3 rounded-xl font-semibold text-white transition-all ${
-              loading ? "bg-gray-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700 shadow-md hover:shadow-lg"
-            }`}
-          >
-            {loading ? "Submitting Application..." : "Submit Application"}
+          <button type="submit" disabled={loading} className="px-6 py-3 rounded-xl font-semibold text-white bg-blue-600 hover:bg-blue-700">
+            {loading ? "Submitting..." : "Submit Application"}
           </button>
         </div>
       </form>

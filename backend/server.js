@@ -11,6 +11,7 @@ import screeningRoutes from './screening/screening.route.js'
 import assesmentRoutes from './assesment/assesment.route.js'
 import scoresRoutes from './Scoring/scoring.route.js'
 import assestmentOptionRoutes from './assesmentOption/assessmentOption.routes.js'
+import assessmentResultRoutes from "./ranking/ranking.route.js";
 
 dotenv.config();
 const app = express();
@@ -33,6 +34,7 @@ app.use('/api/screening', screeningRoutes);
 app.use('/api/assesment', assesmentRoutes);
 app.use('/api/scores', scoresRoutes);
 app.use('/api/assessmentOption', assestmentOptionRoutes);
+app.use('/api/asssessmentResults', assessmentResultRoutes)
 
 
 const PORT = process.env.PORT || 5000;

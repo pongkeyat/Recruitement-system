@@ -1,15 +1,13 @@
-import React, { useState } from "react";
+import React from "react";
 
 // ==========================================
 // 1. MAIN APPLICANT FORM (PARENT COMPONENT)
 // ==========================================
-export default function MainApplicantForm() {
-  // Initialize 'trainings' as an empty array in your state object
-  const [formData, setFormData] = useState({
-    trainings: [] 
+export function MainApplicantForm() {
+  const [formData, setFormData] = React.useState({
+    trainings: []
   });
 
-  // State handler that updates the array and triggers a re-render
   const handleFormChange = (name, value) => {
     setFormData((prev) => ({
       ...prev,
@@ -19,20 +17,18 @@ export default function MainApplicantForm() {
 
   return (
     <div className="w-full space-y-4">
-  {/* Passing down the trainings array and the onChange handler */}
-  <ApplicantTrainingForm 
-    trainings={formData.trainings} 
-    onChange={handleFormChange} 
-  />
-</div>
+      <ApplicantTrainingForm
+        trainings={formData.trainings}
+        onChange={handleFormChange}
+      />
+    </div>
   );
 }
-
 
 // ==========================================
 // 2. TRAINING FORM (CHILD COMPONENT)
 // ==========================================
-export function ApplicantTrainingForm({ trainings = [], onChange }) {
+export default function ApplicantTrainingForm({ trainings = [], onChange }) {
   
   // Handles field changes within a specific row index
   const handleItemChange = (index, field, value) => {

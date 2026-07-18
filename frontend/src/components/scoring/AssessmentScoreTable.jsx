@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import AssessmentRow from "./AssessmentRow";
+import { postRanking } from "../../api/RankingApi";
 
 import {
   getAssessmentCriteria,
@@ -79,40 +80,64 @@ const loadAssessmentData = async () => {
   }
 
 
-  const handleSubmit = () => {
-  // Check if every criterion has a score
-  const unanswered = criteria.filter(
-    (criterion) =>
-      scores[criterion.assessment_criteria_id] === undefined ||
-      scores[criterion.assessment_criteria_id] === ""
-  );
-
-  if (unanswered.length > 0) {
-    alert(
-      `Please complete all assessment criteria.\nMissing: ${unanswered
-        .map((c) => c.name)
-        .join(", ")}`
+  const handleSubmit = async () => {
+    // Check if every criterion has a score
+    const unanswered = criteria.filter(
+      (criterion) =>
+        scores[criterion.assessment_criteria_id] === undefined ||
+        scores[criterion.assessment_criteria_id] === ""
     );
 
-    console.log("Assessment NOT submitted.");
-    console.log("Missing Criteria:", unanswered);
+    if (unanswered.length > 0) {
+      alert(
+        `Please complete all assessment criteria.\nMissing: ${unanswered
+          .map((c) => c.name)
+          .join(", ")}`
+      );
+      return;
+    }
 
-    return;
-  }
+    // Build the details array expected by the backend
+    const details = criteria.map((criterion) => ({
+      assessment_criteria_id: criterion.assessment_criteria_id,
+      assessment_option_id: null, // We'll replace this with the selected option later
+      score: Number(scores[criterion.assessment_criteria_id]),
+    }));
 
-  const assessmentData = {
-    applicant: selectedApplicant,
-    scores,
-    totalScore,
-    remarks,
+    const assessmentData = {
+      applicant_id: selectedApplicant.applicant_id,
+
+      // Make sure this property exists in selectedApplicant
+      session_id: selectedApplicant.session_id,
+
+      // Replace with the logged-in user's ID later
+      evaluator_id: 1,
+
+      total_score: totalScore,
+
+      remarks,
+
+      details,
+    };
+
+    try {
+      console.log("Submitting:", assessmentData);
+
+      const response = await postRanking(assessmentData);
+
+      console.log(response);
+
+      alert(response.message || "Assessment submitted successfully!");
+    } catch (error) {
+      console.error(error);
+
+      alert(
+        error?.message ||
+        error?.response?.data?.message ||
+        "Failed to submit assessment."
+      );
+    }
   };
-
-  console.log("Assessment Submitted Successfully!");
-  console.table(scores);
-  console.log("Assessment Payload:", assessmentData);
-
-  alert("Assessment submitted successfully!");
-};
 
   return (
     <div className="bg-white rounded-2xl shadow border border-slate-200 overflow-hidden">

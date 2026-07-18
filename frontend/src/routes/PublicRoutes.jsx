@@ -22,34 +22,35 @@ import AssesmentSession from '../pages/AssesmentSession';
 import CalendarView from '../pages/CalendarView.';
 import CalendarParent from '../components/assesment/CalendarParent';
 import Scoring from '../pages/Scoring';
+import FinalRankings from '../pages/Ranking';
 
 
 function AppLayout() {
   const { token } = useAuth();
+
   return (
-  <div className="h-screen w-screen overflow-hidden">
-        <div className="grid grid-cols-13 grid-rows-[auto_1fr] h-full">
-          
-          {/* ROW 1: Header */}
-          <div className="col-span-13">
-            <Header isLoggedIn={!!token} />
-          </div>
+    <div className="h-screen w-screen overflow-hidden">
+      <div className="grid h-full grid-cols-13 grid-rows-[auto_1fr]">
 
-          {/* ROW 2, COL 1: Expanded Sidebar (Changed from col-span-1 to col-span-2) */}
-          <div className="col-span-2 h-full overflow-y-auto">
-            <SideBar />
-          </div>
-
-          {/* ROW 2, COLS 2-9: Main Content (Changed from col-span-8 to col-span-7) */}
-          <div className="col-span-11 h-full overflow-y-auto p-4">
-            <Outlet />
-          </div>
-
+        {/* Header */}
+        <div className="col-span-13">
+          <Header isLoggedIn={!!token} />
         </div>
-      </div>
-    );
-}
 
+        {/* Sidebar */}
+        <div className="col-span-2 overflow-hidden">
+          <SideBar />
+        </div>
+
+        {/* Main Content */}
+        <main className="col-span-11 overflow-y-auto p-4">
+          <Outlet />
+        </main>
+
+      </div>
+    </div>
+  );
+}
 // 2. The Single Master Routing Engine
 export default function PublicRoutes() {
   return (
@@ -81,6 +82,7 @@ export default function PublicRoutes() {
         <Route path='/Assesment' element={<AssesmentSession/>} />
         <Route path='/Interview-date' element={<CalendarParent />} />
         <Route path='/Scoring' element={<Scoring />} />
+        <Route path='/comparative-assessment-result' element={<FinalRankings />} />
         
 
         </Route>

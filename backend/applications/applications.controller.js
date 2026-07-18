@@ -2,14 +2,14 @@ import pool from "../config/db.js";
 import { insertJobApplication } from './services/jobApplications.services.js';
 import { insertApplicantInfo } from './services/jobApplicants.services.js';
 import { insertApplicantsEqualDeclaration } from "./services/applicantsEqualDeclaration.services.js";
-import { insertApplicantsCivilServiceEligibility } from "./services/civilServiceEligibility.services.js";
 import { insertApplicantsUploadDocuments } from "./services/applicantsDocuments.services.js";
-import { insertApplicantsEducation } from "./services/applicantEducation.services.js";
-import { insertApplicantsWorkExperience } from "./services/applicantWorkExpercience.services.js";
-import { insertApplicantsTraining } from "./services/applicantsTraining.services.js";
 import { insertHRRemarks } from "./services/hr_remarks.services.js";
 import { sendApplicationReceivedEmail } from "./services/email.services.js";
 import { insertNotification } from "./services/notification.services.js";
+import { insertApplicantsEducation } from "./services/applicantEducation.services.js";
+import { insertApplicantsWorkExperience } from "./services/applicantWorkExpercience.services.js";
+import { insertApplicantsTraining } from "./services/applicantsTraining.services.js";
+import { insertApplicantsCivilServiceEligibility } from "./services/civilServiceEligibility.services.js";
 // ==========================================
 // GET ALL FULL APPLICANTS DATA
 // ==========================================
@@ -129,10 +129,7 @@ export const postFullApplication = async (req, res) => {
     const { 
         vacancy_id, date_received, time_received,
         last_name, first_name, sex, date_of_birth, civil_status, 
-        contact_number, email_address, residential_address, 
-        eligibility_type, rating, date_of_exam, place_of_exam, license_number,
-        education_level, school_name, degree_course, honors_awards,
-        position_title,  company_office,  date_from,  date_to,  monthly_salary,  appointment_status,  is_govt_service
+        contact_number, email_address, residential_address
     } = req.body;
     
     if (
@@ -157,43 +154,27 @@ export const postFullApplication = async (req, res) => {
         // Get the applicant ID from the returned profile
         const generatedApplicantId = applicantProfile.applicant_id; 
 
-        // Step 3: Insert into secondary tables using the brand-new applicant ID
+        // Step 3: Insert into secondary tables
         const equalDeclaration = await insertApplicantsEqualDeclaration(client, generatedApplicantId, req.body);
-        const civilServiceEligibility = await insertApplicantsCivilServiceEligibility(client, generatedApplicantId, req.body);
         const uploadDouments = await insertApplicantsUploadDocuments(client, generatedApplicantId, req.body);
-        const applicantEducation = await insertApplicantsEducation(client, generatedApplicantId, req.body);
-        const applicantWorkExperience = await insertApplicantsWorkExperience(client, generatedApplicantId, req.body);
-        const applicantTraining = await insertApplicantsTraining(client, generatedApplicantId, req.body);
         const hr_remarks = await insertHRRemarks(client, generatedApplicantId, req.body);
 
         await client.query('COMMIT'); 
 
         await sendApplicationReceivedEmail(
-
             email_address,
-
             first_name,
-
             last_name
-
         );
 
         await insertNotification(
-
             client,
-
             generatedJobId,
-
             email_address,
-
             "Application Received",
-
             "Your application has been successfully received.",
-
             "Sent",
-
             "APPLICATION_RECEIVED"
-
         );
 
         return res.status(201).json({ 
@@ -201,11 +182,7 @@ export const postFullApplication = async (req, res) => {
             job_applications_id: generatedJobId,
             applicant: applicantProfile,
             declaration: equalDeclaration,
-            eligibility: civilServiceEligibility,
             documents: uploadDouments,
-            education: applicantEducation,
-            work_experience: applicantWorkExperience,
-            training: applicantTraining,
             hr_remarks: hr_remarks,
         });
 
@@ -339,5 +316,48 @@ export const getApplicantById = async (req, res) => {
     } catch (error) {
         console.error('Fetch applicant failure:', error);
         return res.status(500).json({ error: 'Internal server error fetching applicant profile.' });
+    }
+};
+
+
+
+export const postApplicantQualifications = async (req, res) => {
+    const { applicant_id } = req.body;
+
+    if (!applicant_id) {
+        return res.status(400).json({ error: "Applicant ID is required." });
+    }
+
+    const client = await pool.connect();
+
+    try {
+        // 1. Check if applicant exists first
+        const checkRes = await client.query("SELECT applicant_id FROM applicant_information WHERE applicant_id = $1", [applicant_id]);
+        if (checkRes.rows.length === 0) {
+            return res.status(404).json({ error: "Applicant not found." });
+        }
+
+        await client.query("BEGIN");
+
+        // 2. Ensure all these services use the 'client' provided, NOT 'pool'
+        const eligibility = await insertApplicantsCivilServiceEligibility(client, applicant_id, req.body);
+        const education = await insertApplicantsEducation(client, applicant_id, req.body);
+        const experience = await insertApplicantsWorkExperience(client, applicant_id, req.body);
+        const training = await insertApplicantsTraining(client, applicant_id, req.body);
+
+        await client.query("COMMIT");
+
+        return res.status(201).json({
+            success: true,
+            message: "Applicant qualifications saved successfully.",
+            data: { eligibility, education, experience, training }
+        });
+
+    } catch (err) {
+        await client.query("ROLLBACK");
+        console.error('Transaction Error:', err);
+        return res.status(500).json({ error: "Failed to save applicant qualifications." });
+    } finally {
+        client.release();
     }
 };

@@ -1,244 +1,255 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
+import {
+  GraduationCap,
+  BookOpen,
+  Briefcase,
+  Award,
+  ClipboardCheck,
+} from "lucide-react";
 import EducationCard from "../evaluation/EducationCard";
 import TrainingCard from "../evaluation/TrainingCard";
 import ExperienceCard from "../evaluation/ExperienceCard";
 import EligibilityCard from "../evaluation/EligibilityCard";
-import DocumentChecklist, { getSubmittedDocumentCount } from "../evaluation/DocumentsChecklist";
-import { postScreening } from "../../api/ScreeningApi"; 
+import { postApplicantQualifications } from "../../api/ApplicationApi";
+import { postScreening } from "../../api/ScreeningApi";
 import { useAuth } from "../../context/AuthContext";
 
+// Reusable section header — matches the blue header style used across
+// the rest of the system (numbered badge + icon + title).
+const SectionHeader = ({ number, title, icon: Icon }) => (
+  <div className="flex items-center gap-3 rounded-t-xl bg-[#1e3a8a] px-5 py-4 text-white">
+    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white text-sm font-bold text-[#1e3a8a]">
+      {number}
+    </span>
+    {Icon && <Icon className="h-5 w-5 shrink-0" />}
+    <h2 className="text-base font-semibold tracking-wide">{title}</h2>
+  </div>
+);
+
+// Reusable card wrapper so every section (including the ones rendered by
+// the child *Card components) shares the same border/shadow/radius.
+const SectionCard = ({ number, title, icon, children }) => (
+  <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+    <SectionHeader number={number} title={title} icon={icon} />
+    <div className="p-6">{children}</div>
+  </div>
+);
+
 export default function ApplicantEvaluation({ applicant }) {
-    const { user, loading: authLoading } = useAuth();
-    const [submitting, setSubmitting] = useState(false);
-    
-    // States to collect notes from individual cards
-    const [educationNote, setEducationNote] = useState("");
-    const [trainingNote, setTrainingNote] = useState("");
-    const [experienceNote, setExperienceNote] = useState("");
-    const [eligibilityNote, setEligibilityNote] = useState("");
-    const [documentNote, setDocumentNote] = useState(""); // New Document note state
+  const { user, loading: authLoading } = useAuth();
+  const [submitting, setSubmitting] = useState(false);
 
-    const [educationStatus, setEducationStatus] = useState(null);
-    const [trainingStatus, setTrainingStatus] = useState(null);
-    const [experienceStatus, setExperienceStatus] = useState(null);
-    const [eligibilityStatus, setEligibilityStatus] = useState(null);
-    const [documentStatus, setDocumentStatus] = useState(null); // New Document status state
-    
-    // Form states for the ending section
-    const [generalRemarks, setGeneralRemarks] = useState("");
-    const [overallResult, setOverallResult] = useState("DISQUALIFIED");
+  // States
+  const [educationNote, setEducationNote] = useState("");
+  const [trainingNote, setTrainingNote] = useState("");
+  const [experienceNote, setExperienceNote] = useState("");
+  const [eligibilityNote, setEligibilityNote] = useState("");
 
-    // 1. Core evaluations (matching card logic exactly)
-    const isEducationPass = applicant?.degree_course?.toLowerCase().includes("information technology");
-    
-    const isTrainingPass = (applicant?.hours_attended || 0) >= 4;
+  const [educationStatus, setEducationStatus] = useState("PENDING");
+  const [trainingStatus, setTrainingStatus] = useState("PENDING");
+  const [experienceStatus, setExperienceStatus] = useState("PENDING");
+  const [eligibilityStatus, setEligibilityStatus] = useState("PENDING");
 
-    let expMonths = 0;
-    if (applicant?.experience_date_from && applicant?.experience_date_to) {
-        const from = new Date(applicant.experience_date_from);
-        const to = new Date(applicant.experience_date_to);
-        expMonths = (to.getFullYear() - from.getFullYear()) * 12 + (to.getMonth() - from.getMonth());
-        if (to.getDate() >= from.getDate()) expMonths += 1;
-    }
-    const isExperiencePass = expMonths >= 12;
+  const [education, setEducation] = useState({
+    education_level: "",
+    school_name: "",
+    degree_course: "",
+    honors_awards: "",
+  });
+  const [training, setTraining] = useState({
+    training_title: "",
+    date_from: "",
+    date_to: "",
+    hours_attended: "",
+    training_type: "",
+    conducted_by: "",
+  });
+  const [experience, setExperience] = useState({
+    company_office: "",
+    position_title: "",
+    date_from: "",
+    date_to: "",
+    monthly_salary: "",
+    appointment_status: "",
+    is_govt_service: false,
+  });
+  const [eligibility, setEligibility] = useState({
+    eligibility_type: "",
+    rating: "",
+    date_of_exam: "",
+    place_of_exam: "",
+    license_number: "",
+  });
 
-    const isEligibilityPass = applicant?.eligibility_type
-        ?.toLowerCase()
-        .includes((applicant?.eligibility_requirement || "").toLowerCase());
+  const [generalRemarks, setGeneralRemarks] = useState("");
+  const [overallResult, setOverallResult] = useState("Disqualified");
 
-    // The applicant API returns each submitted document as a has_* boolean field.
-    const isDocumentPass = getSubmittedDocumentCount(applicant) > 0;
+  useEffect(() => {
+    const passed =
+      educationStatus === "PASS" &&
+      trainingStatus === "PASS" &&
+      experienceStatus === "PASS" &&
+      eligibilityStatus === "PASS";
+    setOverallResult(passed ? "Qualified" : "Disqualified");
+  }, [educationStatus, trainingStatus, experienceStatus, eligibilityStatus]);
 
-    const resolvedEducationStatus = educationStatus ?? (isEducationPass ? "PASS" : "PENDING");
-    const resolvedTrainingStatus = trainingStatus ?? (isTrainingPass ? "PASS" : "PENDING");
-    const resolvedExperienceStatus = experienceStatus ?? (isExperiencePass ? "PASS" : "PENDING");
-    const resolvedEligibilityStatus = eligibilityStatus ?? (isEligibilityPass ? "PASS" : "PENDING");
-    const resolvedDocumentStatus = documentStatus ?? (isDocumentPass ? "PASS" : "PENDING"); // Resolved state for documents
-
-    // Automatically suggest a baseline result based on card requirements, 
-    // but user retains full power to toggle it manually below.
-    useEffect(() => {
-        const allPassed = 
-            resolvedEducationStatus === "PASS" &&
-            resolvedTrainingStatus === "PASS" &&
-            resolvedExperienceStatus === "PASS" &&
-            resolvedEligibilityStatus === "PASS" &&
-            resolvedDocumentStatus === "PASS"; // Included in pass verification
-            
-        setOverallResult(allPassed ? "QUALIFIED" : "DISQUALIFIED");
-    }, [resolvedEducationStatus, resolvedTrainingStatus, resolvedExperienceStatus, resolvedEligibilityStatus, resolvedDocumentStatus]);
-
-    if (!applicant) {
-        return <div>Loading...</div>;
-    }
-
-    // 2. Submit Logic handler
-    const handleSubmitEvaluation = async (e) => {
-        e.preventDefault(); 
-
-        const screenedBy = user?.email || user?.user?.email;
-        const jobApplicationId = applicant?.job_applications_id || applicant?.application_id;
-        const applicantId = applicant?.applicant_id || applicant?.id;
-
-        if (!jobApplicationId && !applicantId) {
-            alert("Unable to submit: this applicant record has no identifiable application details.");
-            return;
-        }
-
-        if (authLoading) {
-            alert("Your signed-in user details are still loading. Please try again shortly.");
-            return;
-        }
-
-        if (!screenedBy) {
-            alert("Unable to submit: your session has expired. Please sign in again.");
-            return;
-        }
-
-        try {
-            setSubmitting(true);
-
-            const screeningData = {
-                job_applications_id: jobApplicationId,
-                applicant_id: applicantId,
-                education_passed: resolvedEducationStatus === "PASS",
-                education_remarks: educationNote,
-                eligibility_passed: resolvedEligibilityStatus === "PASS",
-                eligibility_remarks: eligibilityNote,
-                training_passed: resolvedTrainingStatus === "PASS",
-                training_remarks: trainingNote,
-                experience_passed: resolvedExperienceStatus === "PASS",
-                experience_remarks: experienceNote,
-                
-                // New backend key mappings for documents evaluation
-                submitted_documents_passed: resolvedDocumentStatus === "PASS",
-                documents_note: documentNote,
-
-                overall_result: overallResult, 
-                general_remarks: generalRemarks,
-                screened_by: screenedBy
-            };
-
-            const result = await postScreening(screeningData);
-            alert("Evaluation submitted successfully!");
-            console.log("Response:", result);
-            setGeneralRemarks(""); 
-        } catch (error) {
-            console.error("Failed to submit screening:", error);
-            alert(error.response?.data?.error || "Error submitting screening evaluation.");
-        } finally {
-            setSubmitting(false);
-        }
-    };
-
+  if (!applicant) {
     return (
-        <form onSubmit={handleSubmitEvaluation} className="space-y-6">
-            {/* Grid Layout containing the evaluation cards */}
-            <div className="grid grid-cols-2 gap-6">
-                <EducationCard 
-                    applicant={applicant} 
-                    status={resolvedEducationStatus}
-                    setStatus={setEducationStatus}
-                    note={educationNote} 
-                    setNote={setEducationNote} 
-                />
-                
-                <TrainingCard 
-                    applicant={applicant} 
-                    status={resolvedTrainingStatus}
-                    setStatus={setTrainingStatus}
-                    note={trainingNote} 
-                    setNote={setTrainingNote} 
-                />
-
-                <ExperienceCard 
-                    applicant={applicant} 
-                    status={resolvedExperienceStatus}
-                    setStatus={setExperienceStatus}
-                    note={experienceNote} 
-                    setNote={setExperienceNote} 
-                />
-
-                <EligibilityCard 
-                    applicant={applicant} 
-                    status={resolvedEligibilityStatus}
-                    setStatus={setEligibilityStatus}
-                    note={eligibilityNote} 
-                    setNote={setEligibilityNote} 
-                />
-
-                {/* Document checklist placed here spanning full width for structural balance */}
-                <div className="col-span-2">
-                    <DocumentChecklist 
-                        applicant={applicant}
-                        status={resolvedDocumentStatus}
-                        setStatus={setDocumentStatus}
-                        note={documentNote}
-                        setNote={setDocumentNote}
-                    />
-                </div>
-            </div>
-
-            {/* Ending Section: Form Remarks & Status Selection Buttons */}
-            <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm space-y-6">
-                <div className="space-y-2">
-                    <label htmlFor="generalRemarks" className="block text-sm font-semibold text-gray-700">
-                        General Remarks / Final Evaluation Notes
-                    </label>
-                    <textarea
-                        id="generalRemarks"
-                        rows={3}
-                        value={generalRemarks}
-                        onChange={(e) => setGeneralRemarks(e.target.value)}
-                        placeholder="Enter any overall concluding remarks regarding this applicant's screening process..."
-                        className="w-full rounded-lg border border-gray-300 p-3 shadow-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-sm"
-                    />
-                </div>
-
-                {/* Status Toggle Buttons */}
-                <div className="space-y-2">
-                    <span className="block text-sm font-semibold text-gray-700">
-                        Final Screening Status
-                    </span>
-                    <div className="flex gap-4">
-                        <button
-                            type="button"
-                            onClick={() => setOverallResult("QUALIFIED")}
-                            className={`flex-1 py-3 px-4 rounded-lg font-medium border text-center transition tracking-wide ${
-                                overallResult === "QUALIFIED"
-                                    ? "bg-emerald-50 border-emerald-500 text-emerald-700 ring-2 ring-emerald-500/20"
-                                    : "bg-gray-50 border-gray-200 text-gray-500 hover:bg-gray-100"
-                            }`}
-                        >
-                            🟢 QUALIFIED
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => setOverallResult("DISQUALIFIED")}
-                            className={`flex-1 py-3 px-4 rounded-lg font-medium border text-center transition tracking-wide ${
-                                overallResult === "DISQUALIFIED"
-                                    ? "bg-rose-50 border-rose-500 text-rose-700 ring-2 ring-rose-500/20"
-                                    : "bg-gray-50 border-gray-200 text-gray-500 hover:bg-gray-100"
-                            }`}
-                        >
-                            🔴 DISQUALIFIED
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            {/* Unified Submit Action Bar */}
-            <div className="flex justify-end pt-4 border-t border-gray-200">
-                <button
-                    type="submit"
-                    disabled={submitting || authLoading}
-                    className={`px-6 py-2.5 rounded-lg text-white font-medium shadow transition ${
-                        submitting ? "bg-gray-400 cursor-not-allowed" : "bg-emerald-600 hover:bg-emerald-700"
-                    }`}
-                >
-                    {submitting ? "Submitting Evaluation..." : authLoading ? "Loading user details..." : "Submit Screening Results"}
-                </button>
-            </div>
-        </form>
+      <div className="flex items-center justify-center rounded-xl border border-gray-200 bg-white p-10 text-sm text-gray-500 shadow-sm">
+        Loading...
+      </div>
     );
+  }
+
+  const applicantId = applicant.applicant_id || applicant.id;
+  const jobApplicationId =
+    applicant.job_applications_id || applicant.job_application_id;
+  const screenedBy = user?.email || user?.user?.email;
+
+  const handleSubmitEvaluation = async (e) => {
+    e.preventDefault();
+    if (!applicantId || !jobApplicationId) {
+      return alert("Applicant information is incomplete.");
+    }
+    try {
+      setSubmitting(true);
+      await postApplicantQualifications({
+        applicant_id: applicantId,
+        education: [education],
+        training: [training],
+        experience: [experience],
+        eligibility: [eligibility],
+      });
+      await postScreening({
+        applicant_id: applicantId,
+        job_applications_id: jobApplicationId,
+        education_passed: educationStatus === "PASS",
+        education_remarks: educationNote,
+        training_passed: trainingStatus === "PASS",
+        training_remarks: trainingNote,
+        experience_passed: experienceStatus === "PASS",
+        experience_remarks: experienceNote,
+        eligibility_passed: eligibilityStatus === "PASS",
+        eligibility_remarks: eligibilityNote,
+        overall_result: overallResult.toUpperCase(),
+        general_remarks: generalRemarks,
+        screened_by: screenedBy,
+      });
+      alert("Screening completed successfully.");
+    } catch (err) {
+      console.error(err);
+      alert(err.response?.data?.error || "Unable to submit evaluation.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmitEvaluation} className="space-y-6">
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+        {/* Education */}
+        <SectionCard number="1" title="Education" icon={GraduationCap}>
+          <EducationCard
+            applicant={applicant}
+            education={education}
+            setEducation={setEducation}
+            status={educationStatus}
+            setStatus={setEducationStatus}
+            note={educationNote}
+            setNote={setEducationNote}
+          />
+        </SectionCard>
+
+        {/* Training */}
+        <SectionCard number="2" title="Training" icon={BookOpen}>
+          <TrainingCard
+            applicant={applicant}
+            training={training}
+            setTraining={setTraining}
+            status={trainingStatus}
+            setStatus={setTrainingStatus}
+            note={trainingNote}
+            setNote={setTrainingNote}
+          />
+        </SectionCard>
+
+        {/* Experience */}
+        <SectionCard number="3" title="Experience" icon={Briefcase}>
+          <ExperienceCard
+            applicant={applicant}
+            experience={experience}
+            setExperience={setExperience}
+            status={experienceStatus}
+            setStatus={setExperienceStatus}
+            note={experienceNote}
+            setNote={setExperienceNote}
+          />
+        </SectionCard>
+
+        {/* Eligibility */}
+        <SectionCard number="4" title="Eligibility" icon={Award}>
+          <EligibilityCard
+            applicant={applicant}
+            eligibility={eligibility}
+            setEligibility={setEligibility}
+            status={eligibilityStatus}
+            setStatus={setEligibilityStatus}
+            note={eligibilityNote}
+            setNote={setEligibilityNote}
+          />
+        </SectionCard>
+      </div>
+
+      {/* Final Evaluation */}
+      <SectionCard
+        number="5"
+        title="Final Screening Evaluation"
+        icon={ClipboardCheck}
+      >
+        <div className="space-y-5">
+          <div>
+            <label className="mb-2 block text-sm font-medium text-gray-700">
+              General Remarks
+            </label>
+            <textarea
+              rows={4}
+              value={generalRemarks}
+              onChange={(e) => setGeneralRemarks(e.target.value)}
+              placeholder="Enter remarks..."
+              className="w-full rounded-lg border border-gray-300 p-3 text-sm text-gray-800 placeholder-gray-400 transition focus:border-[#1e3a8a] focus:outline-none focus:ring-1 focus:ring-[#1e3a8a]"
+            />
+          </div>
+
+          <div className="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 p-4">
+            <span className="text-sm font-semibold text-gray-700">
+              Overall Result
+            </span>
+            <span
+              className={`rounded-full px-4 py-2 text-sm font-bold ${
+                overallResult === "Qualified"
+                  ? "bg-emerald-100 text-emerald-700"
+                  : "bg-red-100 text-red-700"
+              }`}
+            >
+              {overallResult}
+            </span>
+          </div>
+        </div>
+      </SectionCard>
+
+      <div className="flex justify-end border-t border-gray-200 pt-6">
+        <button
+          type="submit"
+          disabled={submitting || authLoading}
+          className={`rounded-lg px-8 py-3 text-sm font-medium text-white shadow-sm transition ${
+            submitting || authLoading
+              ? "cursor-not-allowed bg-gray-400"
+              : "bg-[#1e3a8a] hover:bg-[#1b3475]"
+          }`}
+        >
+          {submitting ? "Submitting..." : "Submit Screening"}
+        </button>
+      </div>
+    </form>
+  );
 }

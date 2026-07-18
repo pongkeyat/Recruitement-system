@@ -1,4 +1,6 @@
 export const insertApplicantsWorkExperience = async (client, applicantId, data) => {
+    const experienceData = data?.work_experience || data;
+
     const {
         position_title, 
         company_office, 
@@ -7,7 +9,7 @@ export const insertApplicantsWorkExperience = async (client, applicantId, data) 
         monthly_salary, 
         appointment_status, 
         is_govt_service
-    } = data; // Destructured from data object
+    } = experienceData;
 
     // Clean and format text fields
     const cleanPositionTitle = position_title && position_title.trim() !== "" 

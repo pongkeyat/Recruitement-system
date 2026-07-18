@@ -233,7 +233,7 @@ export default function Login() {
           View Available Vacancies (Public)
         </button>
         <p className="mt-1 text-white/60">
-          © 2026 La Union SDO • ICT Unit
+          © 2026 Regional Office 1
         </p>
       </footer>
     </div>

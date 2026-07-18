@@ -60,8 +60,9 @@ export default function SideBar() {
       title: "VACANCY MANAGEMENT",
       roles: [ROLES.ADMIN], 
       items: [
-        { label: "Vacancy Postings", to: "/vacancyPosting", icon: Briefcase },
         { label: "Post New Vacancy", to: "/postVacancy", icon: PlusCircle },
+        { label: "Vacancy Postings", to: "/vacancyPosting", icon: Briefcase },
+     
       ]
     },
     {
@@ -76,7 +77,7 @@ export default function SideBar() {
       title: "SCREENING",
       roles: [ROLES.HRO], 
       items: [
-        { label: "Initial Screening", to: "/initialScreening", icon: ClipboardCheck },
+        { label: "Initial Evaluation", to: "/initialScreening", icon: ClipboardCheck },
         { label: "Qualified", to: "/Qualified", icon: UserRoundCheck },
         { label: "Disqualified", to: "/Disqualified", icon: UserRoundX },
       ]
@@ -91,6 +92,13 @@ export default function SideBar() {
 
       ]
     },
+     {
+      title: "Ranking",
+      roles: [ROLES.ADMIN], 
+      items: [
+        { label: "Comparative Assessment Result", to: "/comparative-assessment-result", icon: User },
+      ]
+    },
     {
       title: "ADMIN",
       roles: [ROLES.ADMIN], 
@@ -98,6 +106,7 @@ export default function SideBar() {
         { label: "User Management", to: "/usermanagement", icon: User },
       ]
     },
+
   ];
 
   const currentRoleNormalized = userRole ? userRole.toLowerCase() : '';
@@ -126,12 +135,12 @@ export default function SideBar() {
     <nav className="flex flex-col h-screen bg-[#112244] text-slate-300 border-r border-white/5 font-sans select-none">
       
       {/* BRAND HEADER */}
-      <div className="flex items-center gap-3 p-4 border-b border-white/5 flex-shrink-0">
-        <div className="flex flex-col min-w-0">
-          <span className="text-[14px] font-bold text-white tracking-wide truncate">Region 1</span>
-          <span className="text-[11px] text-slate-400 font-medium">Ranking System v1.0.0</span>
-        </div>
-      </div>
+  <div className="flex items-center justify-center gap-3 p-4 border-b border-white/5 flex-shrink-0">
+    <div className="flex flex-col items-center min-w-0">
+      <span className="text-[14px] font-bold text-white tracking-wide truncate">Region 1</span>
+      <span className="text-[11px] text-slate-400 font-medium">Ranking System v1.0.0</span>
+    </div>
+  </div>
 
       {/* USER PROFILE CARD */}
       <div className="p-3 mx-3 mt-4 mb-2 rounded-xl bg-white/[0.04] border border-white/[0.03] flex items-center gap-3 flex-shrink-0">

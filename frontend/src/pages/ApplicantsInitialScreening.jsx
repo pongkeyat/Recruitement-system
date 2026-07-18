@@ -17,7 +17,13 @@ export default function ApplicantsInitialScreening() {
     try {
       setLoading(true);
       const data = await getApplicationById(id);
-      setApplication(data?.data || data);
+      const loadedApplication = data?.data || data;
+
+      if (loadedApplication?.job_applications_id && !loadedApplication.applicant_id) {
+        loadedApplication.applicant_id = loadedApplication.applicant_id || null;
+      }
+
+      setApplication(loadedApplication);
     } catch (err) {
       console.error("Failed to load application data:", err);
     } finally {

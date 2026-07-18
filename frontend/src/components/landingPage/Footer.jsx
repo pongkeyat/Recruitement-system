@@ -8,9 +8,6 @@ const Footer = () => {
       <div className="max-w-7xl mx-auto px-4 py-8 grid grid-cols-1 md:grid-cols-3 gap-6">
         
         <div>
-          <h2 className="text-lg font-bold mb-2">
-            La Union SDO
-          </h2>
 
           <p className="text-sm text-gray-300">
             Department of Education • Region I

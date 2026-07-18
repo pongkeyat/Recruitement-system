@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Briefcase,  Clock3, Check } from "lucide-react";
+import { Briefcase, Clock3 } from "lucide-react";
 import { getVacancies } from "../../api/Vacancies";
 
 function Applications({ formData, onChange }) {
@@ -22,165 +22,111 @@ function Applications({ formData, onChange }) {
     }
   };
 
-    useEffect(() => {
-        const loadVacancies = async () => {
-            try {
-                const data = await getVacancies();
-                setVacancies(data || []);
-            } catch (err) {
-                console.error("Failed to load vacancies:", err);
-            } finally {
-                setLoading(false);
-            }
-        };
+  useEffect(() => {
+    const loadVacancies = async () => {
+      try {
+        const data = await getVacancies();
+        setVacancies(data || []);
+      } catch (err) {
+        console.error("Failed to load vacancies:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadVacancies();
+  }, []);
 
-        loadVacancies();
-    }, []);
-
-        return (
-        <div className="rounded-[24px] bg-white shadow-md overflow-hidden border border-gray-200">
-
-            {/* Header */}
-            <div className="bg-[#234C86] px-6 py-5 flex items-center gap-4">
-            <div className="w-9 h-5 rounded-full bg-white/15 flex items-center justify-center text-white font-semibold">
-                1
+  return (
+    <div className="rounded-[20px] bg-white shadow-sm border border-gray-200 overflow-hidden">
+            
+            {/* --- Header for Card 1 (Vacancy / Position Applied For) --- */}
+        <div className="bg-[#1e407a] px-6 py-4 rounded-t-[20px] text-white flex items-center justify-between">
+        <div className="flex items-center gap-3">
+            {/* Uniform Badge */}
+            <div className="flex items-center justify-center w-7 h-7 rounded-full bg-white/20 text-white font-bold text-sm">
+            1
             </div>
-
-            <Briefcase size={18} className="text-white" />
-
-            <h2 className="text-white font-semibold text-[28px] leading-none">
-                Vacancy / Position Applied For
-            </h2>
-            </div>
-
-            {/* Body */}
-            <div className="p-6">
-
-            {/* First Row */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
-                {/* Vacancy */}
-                <div className="lg:col-span-2">
-                <label className="block text-[17px] font-semibold text-gray-800 mb-2">
-                    Select Vacancy Posting
-                    <span className="text-red-500"> *</span>
-                </label>
-
-                <select
-                    value={form.vacancy_id}
-                    onChange={(e) =>
-                    handleLocalChange("vacancy_id", e.target.value)
-                    }
-                    className="w-full h-[50px] rounded-xl border border-gray-300 bg-[#F8FAFC] px-5 text-gray-600 text-[16px] outline-none focus:ring-2 focus:ring-blue-300"
-                >
-                    <option value="">
-                    -- Select Position / Vacancy --
-                    </option>
-
-                    {loading && (
-                    <option disabled>Loading...</option>
-                    )}
-
-                    {!loading &&
-                    vacancies.map((vacancy) => (
-                        <option
-                        key={vacancy.vacancy_id}
-                        value={vacancy.vacancy_id}
-                        >
-                        {vacancy.position_title}
-                        </option>
-                    ))}
-
-                    {!loading &&
-                    vacancies.length === 0 && (
-                        <option disabled>
-                        No vacancies available
-                        </option>
-                    )}
-                </select>
-                </div>
-
-                {/* Date */}
-                <div>
-                <label className="block text-[17px] font-semibold text-gray-800 mb-2">
-                    Date Received
-                    <span className="text-red-500"> *</span>
-                </label>
-
-             
-                    <input
-                    type="date"
-                    value={form.dateReceived}
-                    onChange={(e) =>
-                        handleLocalChange(
-                        "dateReceived",
-                        e.target.value
-                        )
-                    }
-                    className="w-full h-[50px] rounded-xl border border-gray-300 bg-[#F8FAFC] px-5 pr-12 text-[16px] outline-none focus:ring-2 focus:ring-blue-300"
-                    />
-
-                </div>
-            </div>
-
-            {/* Second Row */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
-
-                {/* Time */}
-                <div>
-                <label className="block text-[17px] font-semibold text-gray-800 mb-2">
-                    Time Received
-                    <span className="text-red-500"> *</span>
-                </label>
-
-                <div className="relative">
-                    <input
-                    type="text"
-                    readOnly
-                    value={form.timeReceived}
-                    className="w-full h-[50px] rounded-xl border border-gray-300 bg-[#F8FAFC] px-5 pr-12 text-[16px]"
-                    />
-
-                    <Clock3
-                    size={18}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500"
-                    />
-                </div>
-                </div>
-
-                {/* Received By */}
-                <div>
-                <label className="block text-[17px] font-semibold text-gray-800 mb-2">
-                    Received By
-                </label>
-
-                <input
-                    type="text"
-                    readOnly
-                    value={form.receivedBy}
-                    disabled = {true}
-                    className="w-full h-[50px] rounded-xl border border-gray-700 bg-[#F8FAFC] px-5 text-[16px]"
-                />
-                </div>
-
-                {/* Submission Type */}
-                <div>
-                <label className="block text-[17px] font-semibold text-gray-800 mb-2">
-                    Submission Type
-                </label>
-
-                <input
-                    type="text"
-                    readOnly
-                    value={form.submissionType}
-                    disabled = {true}
-                    className="w-full h-[50px] rounded-xl border border-gray-700 bg-[#F8FAFC] px-5 text-[16px]"
-                />
-                </div>
-            </div>
-            </div>
+            <Briefcase size={20} />
+            <h2 className="text-lg font-semibold">Vacancy / Position Applied For</h2>
         </div>
-        );
+        </div>
+      {/* Body */}
+      <div className="p-6">
+        {/* First Row */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2">
+            <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+              Select Vacancy Posting <span className="text-red-500">*</span>
+            </label>
+            <select
+              value={form.vacancy_id}
+              onChange={(e) => handleLocalChange("vacancy_id", e.target.value)}
+              className="w-full h-11 rounded-lg border border-gray-300 bg-gray-50 px-4 text-gray-700 text-sm outline-none focus:ring-2 focus:ring-blue-100"
+            >
+              <option value="">-- Select Position / Vacancy --</option>
+              {!loading && vacancies.map((v) => (
+                <option key={v.vacancy_id} value={v.vacancy_id}>{v.position_title}</option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+              Date Received <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="date"
+              value={form.dateReceived}
+              onChange={(e) => handleLocalChange("dateReceived", e.target.value)}
+              className="w-full h-11 rounded-lg border border-gray-300 bg-gray-50 px-4 text-sm outline-none focus:ring-2 focus:ring-blue-100"
+            />
+          </div>
+        </div>
+
+        {/* Second Row */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+              Time Received <span className="text-red-500">*</span>
+            </label>
+            <div className="relative">
+              <input
+                type="text"
+                readOnly
+                value={form.timeReceived}
+                className="w-full h-11 rounded-lg border border-gray-300 bg-gray-50 px-4 text-sm"
+              />
+              <Clock3 size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+              Received By
+            </label>
+            <input
+              type="text"
+              readOnly
+              value={form.receivedBy}
+              className="w-full h-11 rounded-lg border border-gray-200 bg-gray-100 px-4 text-sm text-gray-500"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+              Submission Type
+            </label>
+            <input
+              type="text"
+              readOnly
+              value={form.submissionType}
+              className="w-full h-11 rounded-lg border border-gray-200 bg-gray-100 px-4 text-sm text-gray-500"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 export default Applications;

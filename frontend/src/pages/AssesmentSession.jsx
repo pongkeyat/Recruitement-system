@@ -35,12 +35,26 @@ export default function AssesmentSession() {
 
   return (
     <div className="flex flex-col min-h-screen w-full bg-[#f4f6f9]">
-      <AssessmentHeader onSaveSession={handleSaveSession} />
+      {/* 1. Header: Fixed height, shadow for depth */}
+      <div className="bg-white border-b border-gray-200">
+        <AssessmentHeader onSaveSession={handleSaveSession} />
+      </div>
 
-      <main className="flex-1 overflow-y-auto p-6 space-y-6">
-        <div className="w-full space-y-5">
-          <AssessmentStats count={sessions.length} loading={loading} />
-          <AssessmentDashboard data={sessions} loading={loading} error={error} />
+      {/* 2. Main Container: Added max-w-7xl to prevent stretching on wide screens */}
+      <main className="flex-1 overflow-y-auto p-4 md:p-8">
+        <div className="max-w-7xl mx-auto space-y-6">
+          
+          {/* Stats: Needs to be prominent */}
+          <section>
+            <AssessmentStats count={sessions.length} loading={loading} />
+          </section>
+
+          {/* Dashboard: The main area, should have consistent card styling */}
+          <section className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+             <div className="p-1">
+                <AssessmentDashboard data={sessions} loading={loading} error={error} />
+             </div>
+          </section>
         </div>
       </main>
     </div>

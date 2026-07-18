@@ -58,8 +58,16 @@ export default function CreateSessionModal({ showModal, onClose, onSave }) {
       try {
         const data = await getApplicationsByVacancyId(vacancyId);
         if (!mounted) return;
-        const processedApplicants = Array.isArray(data) ? data : [];
-        setApplicants(processedApplicants);
+        
+        const rawApplicants = Array.isArray(data) ? data : [];
+        
+        // 🎯 FIX: Filter only qualified applicants
+        const qualifiedApplicants = rawApplicants.filter((app) => {
+          const status = (app.application_status || app.status || '').toLowerCase();
+          return status === 'qualified' || status === 'initial_screening_qualified';
+        });
+
+        setApplicants(qualifiedApplicants);
       } catch (err) {
         console.error('Could not load applicants for vacancy', vacancyId, err);
         if (mounted) setApplicants([]);
@@ -236,7 +244,9 @@ export default function CreateSessionModal({ showModal, onClose, onSave }) {
                     ? `✓ All ${applicants.length} candidates selected` 
                     : !formData.vacancy_id 
                       ? '-- Select a vacancy first --' 
-                      : '-- Choose Applicant --'}
+                      : applicants.length === 0 
+                        ? '-- No qualified candidates found --'
+                        : '-- Choose Applicant --'}
               </option>
               {!selectAll && applicants.map((app) => (
                 <option key={app.job_application_id || app.job_applications_id} value={app.job_application_id || app.job_applications_id}>

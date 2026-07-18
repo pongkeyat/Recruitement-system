@@ -1,131 +1,82 @@
-import React from "react";
+import React from 'react';
+import { FileCheck } from 'lucide-react';
 
 export default function DocumentChecklist({ documents, onChange }) {
-  // Mapping backend snake_case keys to reader-friendly display labels
-  const documentLabels = {
-    has_application_letter: "Application Letter",
-    has_birth_certificate: "Birth Certificate (PSA)",
-    has_marriage_certificate_psa: "Marriage Certificate (PSA)",
-    has_personal_data_sheet: "Personal Data Sheet (PDS)",
-    has_civil_service_eligibility_cert: "Civil Service Eligibility Certificate",
-    has_transcript_of_records: "Transcript of Records (TOR)",
-    has_diploma: "Diploma",
-    has_certificate_of_employment: "Certificate of Employment (COE)",
-    has_service_record: "Service Record",
-    has_performance_rating: "Performance Rating",
-    has_nbi_clearance: "NBI Clearance",
-    has_medical_certificate: "Medical Certificate",
-    has_tin_id_or_verification: "TIN ID or Verification Slip",
-    has_voter_id_or_comelec_cert: "Voter ID or COMELEC Certification",
-    has_training_certificates: "Training Certificates",
-    has_cert_of_outstanding_accomplishments: "Certificate of Outstanding Accomplishments",
-    has_oath_of_office: "Oath of Office",
-  };
+  const requirements = [
+    { field: "has_application_letter", label: "Letter of intent addressed to the Head of Office or highest human resource officer" },
+    { field: "has_personal_data_sheet", label: "Duly accomplished Personal Data Sheet (PDS) (CS Form No. 212, Revised 2017) and Work Experience Sheet, if applicable" },
+    { field: "has_tin_id_or_verification", label: "Photocopy of valid and updated PRC License/ID, if applicable" },
+    { field: "has_civil_service_eligibility_cert", label: "Photocopy of Certificate of Eligibility/Report of Rating, if applicable" },
+    { field: "has_transcript_of_records", label: "Photocopy of scholastic/academic record such as Transcript of Records (TOR) and Diploma, including completion of graduate and post-graduate units/degrees, if available" },
+    { field: "has_training_certificates", label: "Photocopy of Certificate/s of Training, if applicable" },
+    { field: "has_service_record", label: "Photocopy of Certificate of Employment, Contract of Service, or duly signed Service Record, whichever is applicable" },
+    { field: "has_oath_of_office", label: "Photocopy of latest appointment, if applicable" },
+    { field: "has_performance_rating", label: "Photocopy of the Performance Ratings in the last rating period(s) covering one (1) year prior to the deadline of submission, if applicable" },
+    { field: "has_birth_certificate", label: "Checklist of Requirements and Omnibus Sworn Statement on the Certification on the Authenticity and Veracity (CAV) and Data Privacy Consent Form" },
+    { field: "has_cert_of_outstanding_accomplishments", label: "Other documents as may be required for comparative assessment such as Outstanding Accomplishments and MOVs" },
+  ];
 
-  // Categorizing them visually so it's easier for the user to read
-  const categories = {
-    "Core Requirements": [
-      "has_application_letter",
-      "has_personal_data_sheet",
-      "has_birth_certificate",
-      "has_marriage_certificate_psa",
-    ],
-    "Education & Eligibility": [
-      "has_civil_service_eligibility_cert",
-      "has_transcript_of_records",
-      "has_diploma",
-      "has_training_certificates",
-    ],
-    "Work History & Clearances": [
-      "has_certificate_of_employment",
-      "has_service_record",
-      "has_performance_rating",
-      "has_nbi_clearance",
-      "has_medical_certificate",
-    ],
-    "Identifications & Others": [
-      "has_tin_id_or_verification",
-      "has_voter_id_or_comelec_cert",
-      "has_cert_of_outstanding_accomplishments",
-      "has_oath_of_office",
-    ],
-  };
+  const allChecked = requirements.every((item) => documents[item.field]);
 
-  // Extract all keys to easily evaluate global state
-  const allKeys = Object.keys(documentLabels);
-  
-  // Check if every single document is currently checked
-  const isAllChecked = allKeys.every((key) => documents[key] === true);
-
-  // Handle mass toggling
-  const handleSelectAllToggle = (e) => {
-    const targetValue = e.target.checked;
-    allKeys.forEach((key) => {
-      onChange(key, targetValue);
-    });
+  const toggleAll = (checked) => {
+    requirements.forEach((item) => onChange(item.field, checked));
   };
 
   return (
-    <div className="bg-white rounded-3xl border border-gray-200 shadow-sm overflow-hidden font-sans">
-      {/* Header Banner Section */}
-      <div className="bg-[#1e4a8a] p-5 pb-4 text-white flex flex-col gap-2">
+    <div className="rounded-[20px] bg-white shadow-sm border border-gray-200 overflow-hidden">
+      {/* Header with Number 4 Badge */}
+      <div className="bg-[#204a87] px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          {/* Section Number Badge */}
-          <span className="flex items-center justify-center bg-white/20 text-white font-semibold text-sm w-6 h-6 rounded-full">
-            3
-          </span>
-          {/* Header Icon */}
-          <svg className="w-5 h-5 text-white/90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-          <h2 className="text-xl font-medium tracking-wide">Document Checklist</h2>
+          <div className="flex items-center justify-center w-7 h-7 rounded-full bg-white/20 text-white font-bold text-sm">
+            4
+          </div>
+          <FileCheck size={20} className="text-white" />
+          <h2 className="text-white font-semibold text-lg">
+            Basic Documentary Requirement
+          </h2>
         </div>
-      </div>
-      
-      {/* Subheader / Instruction Bar with "Check All" functionality */}
-      <div className="bg-[#163664] px-5 py-2.5 text-white/90 text-sm border-t border-white/10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-        <span>Track and verify all submitted physical or digital documents.</span>
-        
-        <label className="flex items-center gap-2 cursor-pointer select-none bg-white/10 hover:bg-white/20 px-3 py-1 rounded-lg transition-colors text-xs font-medium self-start sm:self-auto">
+
+        <label className="flex items-center gap-2 text-sm text-white cursor-pointer font-medium hover:text-gray-200">
           <input
             type="checkbox"
-            checked={isAllChecked}
-            onChange={handleSelectAllToggle}
-            className="w-3.5 h-3.5 text-[#1e4a8a] border-white/30 rounded focus:ring-0 focus:ring-offset-0 cursor-pointer accent-[#1e4a8a]"
+            checked={allChecked}
+            onChange={(e) => toggleAll(e.target.checked)}
+            className="w-4 h-4 rounded border-gray-300"
           />
-          <span>{isAllChecked ? "Uncheck All" : "Check All"}</span>
+          Check All
         </label>
       </div>
 
-      {/* Grid Content Background */}
-      <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6 bg-[#fcfdfd]">
-        {Object.entries(categories).map(([categoryName, keys]) => (
-          <div key={categoryName} className="space-y-3 bg-[#f8fafc] p-5 rounded-2xl border border-gray-200/60 shadow-sm">
-            <h3 className="font-semibold text-xs text-[#1e4a8a] uppercase tracking-wider">
-              {categoryName}
-            </h3>
-            
-            <div className="space-y-1.5">
-              {keys.map((key) => (
-                <label 
-                  key={key} 
-                  className="flex items-center p-2.5 rounded-xl hover:bg-white transition-all cursor-pointer select-none border border-transparent hover:border-gray-200 hover:shadow-sm"
-                >
-                  <input
-                    type="checkbox"
-                    checked={documents[key] || false}
-                    onChange={(e) => onChange(key, e.target.checked)}
-                    className="w-4 h-4 text-[#1e4a8a] border-gray-300 rounded focus:ring-[#1e4a8a] cursor-pointer"
-                  />
-                  <span className="ml-3 text-[14px] font-medium text-gray-700">
-                    {documentLabels[key]}
-                  </span>
-                </label>
-              ))}
-            </div>
-          </div>
-        ))}
-      </div>
+      {/* Main Table Structure Preserved */}
+      <table className="w-full border-collapse text-sm">
+        <thead>
+          <tr className="bg-gray-100">
+            <th className="border border-gray-300 w-12 py-3 text-gray-700">#</th>
+            <th className="border border-gray-300 text-left px-4 py-3 text-gray-700">Basic Documentary Requirement</th>
+            <th className="border border-gray-300 w-24 text-gray-700">Submitted</th>
+          </tr>
+        </thead>
+        <tbody>
+          {requirements.map((item, index) => (
+            <tr key={item.field} className="hover:bg-gray-50">
+              <td className="border border-gray-300 text-center py-3 text-gray-600">
+                {String.fromCharCode(97 + index)}.
+              </td>
+              <td className="border border-gray-300 px-4 py-3 text-gray-800 leading-6">
+                {item.label}
+              </td>
+              <td className="border border-gray-300 text-center">
+                <input
+                  type="checkbox"
+                  checked={documents[item.field] || false}
+                  onChange={(e) => onChange(item.field, e.target.checked)}
+                  className="w-5 h-5 accent-[#204a87] cursor-pointer"
+                />
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }

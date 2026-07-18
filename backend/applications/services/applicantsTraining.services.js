@@ -1,4 +1,6 @@
 export const insertApplicantsTraining = async (client, applicantId, data) => {
+    const trainingData = data?.training || data;
+
     const { 
         training_title, 
         date_from, 
@@ -6,7 +8,7 @@ export const insertApplicantsTraining = async (client, applicantId, data) => {
         hours_attended, 
         training_type, 
         conducted_by 
-    } = data;
+    } = trainingData;
 
 
     const cleanTrainingTitle = training_title && training_title.trim() !== "" 
