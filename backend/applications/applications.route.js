@@ -6,6 +6,6 @@ const router = express.Router();
 router.post('/postFullApplication', postFullApplication);
 router.get('/getFullApplicants', getFullApplicants);
 router.get('/getApplicantById/:id', getApplicantById);
-router.get('/postApplicantQualifications', postApplicantQualifications)
+router.post('/postApplicantQualifications', postApplicantQualifications)
 
 export default router;

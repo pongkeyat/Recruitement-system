@@ -22,16 +22,21 @@ export default function TrainingCard({
     };
 
     useEffect(() => {
-        const requirement =
-            (applicant?.training_requirement || "").toLowerCase();
+        const requirement = (applicant?.training_requirement || "").trim().toLowerCase();
+        const title = (training.training_title || "").trim().toLowerCase();
+        const hours = Number(training.hours_attended || 0);
 
-        const title =
-            (training.training_title || "").toLowerCase();
+        // 1. FIRST check: If there is no requirement, it is an automatic immediate PASS
+        const hasNoRequirement = 
+            !requirement || 
+            ["none", "not required", "n/a", "no requirement"].some(k => requirement.includes(k));
 
-        const hours =
-            Number(training.hours_attended || 0);
+        if (hasNoRequirement) {
+            setStatus("PASS");
+            return;
+        }
 
-        // No input yet
+        // 2. SECOND check: Only check for empty form fields if a requirement actually exists
         if (!title && hours === 0) {
             setStatus("PENDING");
             return;
@@ -39,25 +44,20 @@ export default function TrainingCard({
 
         let passed = false;
 
-        // Match requirement by title
-        if (requirement && title.includes(requirement)) {
-            passed = true;
-        }
-
-        // If requirement is numeric hours (e.g. 8 Hours)
-        const requiredHours = parseInt(requirement);
-
+        // 3. Match requirement by checking numeric hours (e.g., "8 Hours" or "24")
+        const requiredHours = parseInt(requirement, 10);
+        
         if (!isNaN(requiredHours)) {
             passed = hours >= requiredHours;
+        } 
+        // 4. Fallback: Match text inside the training title (e.g., "Leadership")
+        else if (title.includes(requirement)) {
+            passed = true;
         }
 
         setStatus(passed ? "PASS" : "FAILED");
 
-    }, [
-        training,
-        applicant,
-        setStatus,
-    ]);
+    }, [training, applicant, setStatus]);
 
     return (
         <div className="space-y-4">
@@ -79,7 +79,7 @@ export default function TrainingCard({
 
                 <input
                     className={fieldClass}
-                    value={training.training_title}
+                    value={training.training_title || ""}
                     onChange={(e) =>
                         handleChange(
                             "training_title",
@@ -99,7 +99,7 @@ export default function TrainingCard({
                     <input
                         type="date"
                         className={fieldClass}
-                        value={training.date_from}
+                        value={training.date_from || ""}
                         onChange={(e) =>
                             handleChange(
                                 "date_from",
@@ -117,7 +117,7 @@ export default function TrainingCard({
                     <input
                         type="date"
                         className={fieldClass}
-                        value={training.date_to}
+                        value={training.date_to || ""}
                         onChange={(e) =>
                             handleChange(
                                 "date_to",
@@ -139,7 +139,7 @@ export default function TrainingCard({
                     <input
                         type="number"
                         className={fieldClass}
-                        value={training.hours_attended}
+                        value={training.hours_attended || ""}
                         onChange={(e) =>
                             handleChange(
                                 "hours_attended",
@@ -156,7 +156,7 @@ export default function TrainingCard({
 
                     <input
                         className={fieldClass}
-                        value={training.training_type}
+                        value={training.training_type || ""}
                         onChange={(e) =>
                             handleChange(
                                 "training_type",
@@ -175,7 +175,7 @@ export default function TrainingCard({
 
                 <input
                     className={fieldClass}
-                    value={training.conducted_by}
+                    value={training.conducted_by || ""}
                     onChange={(e) =>
                         handleChange(
                             "conducted_by",

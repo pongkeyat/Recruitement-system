@@ -1,7 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 // Adjust the path to where your logo file is actually located
-import depedLogo from "../assets/depedLogo.png"; 
+import depedLogo from "../assets/deped-logo.png"; 
 
 export default function Header({ isLoggedIn }) {
   const navigate = useNavigate();

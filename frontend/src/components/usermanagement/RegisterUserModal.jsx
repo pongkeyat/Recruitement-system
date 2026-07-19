@@ -174,6 +174,7 @@ export default function RegisterUserModal({ isOpen, onClose, onUserRegistered })
               >
                 <option value="hro">Human Resource Officer (HRO)</option>
                 <option value="hrmpsb">HRMPSB Member</option>
+                <option value="admin">SUPER ADMIN</option>
               </select>
               {roleError && (
                 <p className="mt-1 text-left text-xs text-red-600">

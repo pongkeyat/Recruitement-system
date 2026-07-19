@@ -1,54 +1,97 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react"; 
 import { useNavigate } from "react-router-dom";
 import { Eye } from "lucide-react";
 import { getApplications } from "../api/ApplicationApi";
 import QualifiedApplicantsHeader from "../components/qualified/QualifiedApplicantsHeader";
+import VacancyDropdown from "../components/vacancies/VacancyDropdown"; 
 
 const getStatusStyles = (status) => {
-  switch (status) {
-    case "Qualified":
+  switch (status?.toLowerCase()) {
+    case "qualified":
       return "bg-emerald-100 text-emerald-700";
+    case "disqualified":
+      return "bg-red-100 text-red-700";
     default:
       return "bg-slate-100 text-slate-700";
   }
 };
 
 export default function Qualified() {
-  const [applications, setApplications] = useState([]);
+  const [allApplications, setAllApplications] = useState([]); 
+  const [selectedVacancy, setSelectedVacancy] = useState("");
+  const [showDisqualified, setShowDisqualified] = useState(false); 
   const [loading, setLoading] = useState(true);
 
   const navigate = useNavigate();
 
+  console.log("🏗️ [Qualified View] Render cycle triggered.");
+
   useEffect(() => {
+    let isMounted = true;
+    console.log("📡 [Qualified View] Mounting component. Triggering API fetch...");
+
     const fetchData = async () => {
       try {
         const response = await getApplications();
         const data = response?.data || response;
 
+        if (!isMounted) return;
+
         if (Array.isArray(data)) {
-          // Only Qualified Applicants
-          setApplications(
-            data.filter(
-              (app) =>
-                app.application_status?.toLowerCase() === "qualified"
-            )
-          );
+          setAllApplications(data);
         } else {
-          setApplications([]);
+          setAllApplications([]);
         }
       } catch (error) {
-        console.error(error);
+        console.error("❌ Error fetching applications data pool:", error);
       } finally {
-        setLoading(false);
+        if (isMounted) {
+          setLoading(false);
+        }
       }
     };
 
     fetchData();
+
+    return () => {
+      isMounted = false;
+      console.log("🧼 [Qualified View] Component unmounted / cleaned up.");
+    };
   }, []);
 
   const handleViewApplication = (id) => {
     navigate(`/applicants/${id}`);
   };
+
+  // Process data: Apply status filter, vacancy filter, and DEDUPLICATE users
+  const filteredApplications = useMemo(() => {
+    const targetStatus = showDisqualified ? "disqualified" : "qualified";
+    
+    // 1. Filter by Status
+    const statusFiltered = allApplications.filter(
+      (app) => app.application_status?.toLowerCase() === targetStatus
+    );
+
+    // 2. Filter by Vacancy
+    const vacancyFiltered = selectedVacancy
+      ? statusFiltered.filter((app) => String(app.vacancy_id) === String(selectedVacancy))
+      : statusFiltered;
+
+    // 3. DEDUPLICATE: Ensure each applicant/user appears exactly once
+    const uniqueMap = new Map();
+    vacancyFiltered.forEach((app) => {
+      // Pick a unique identifier for the human user
+      const uniqueUserId = app.applicant_id || app.application_id || app.id;
+      
+      if (uniqueUserId && !uniqueMap.has(uniqueUserId)) {
+        uniqueMap.set(uniqueUserId, app);
+      }
+    });
+
+    return Array.from(uniqueMap.values());
+  }, [allApplications, showDisqualified, selectedVacancy]);
+
+  const targetStatus = showDisqualified ? "disqualified" : "qualified";
 
   return (
     <div className="min-h-screen bg-[#edf2f8] p-6">
@@ -57,9 +100,34 @@ export default function Qualified() {
         onProceed={() => navigate("/assessment")}
       />
 
+      {/* Controls Container */}
+      <div className="mt-6 flex flex-wrap items-end gap-4 rounded-xl bg-white p-4 shadow-sm border border-gray-100 width-screen">
+        <div className="w-full sm:max-w-xs">
+          <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+            Filter by Vacancy
+          </label>
+          <VacancyDropdown 
+            value={selectedVacancy} 
+            onChange={(val) => setSelectedVacancy(val || "")} 
+          />
+        </div>
+
+        <button
+          type="button"
+          onClick={() => setShowDisqualified(!showDisqualified)}
+          className={`h-11 px-5 rounded-lg text-sm font-semibold transition-colors duration-200 border ${
+            showDisqualified 
+              ? "bg-red-600 border-red-600 text-white hover:bg-red-700" 
+              : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
+          }`}
+        >
+          {showDisqualified ? "Showing Disqualified" : "View Disqualified Pool"}
+        </button>
+      </div>
+
       <div className="mt-6 rounded-3xl bg-white shadow overflow-hidden">
         <table className="min-w-full">
-          <thead className="bg-[#1E3E74] text-white">
+          <thead className={showDisqualified ? "bg-red-950 text-white" : "bg-[#1E3E74] text-white"}>
             <tr>
               <th className="px-5 py-4 text-left">Vacancy ID</th>
               <th className="px-5 py-4 text-left">Applicant Name</th>
@@ -73,49 +141,44 @@ export default function Qualified() {
           <tbody>
             {loading ? (
               <tr>
-                <td
-                  colSpan="6"
-                  className="py-10 text-center text-slate-500"
-                >
-                  Loading qualified applicants...
+                <td colSpan="6" className="py-10 text-center text-slate-500">
+                  Loading applicants...
                 </td>
               </tr>
-            ) : applications.length === 0 ? (
+            ) : filteredApplications.length === 0 ? (
               <tr>
-                <td
-                  colSpan="6"
-                  className="py-10 text-center text-slate-500"
-                >
-                  No qualified applicants found.
+                <td colSpan="6" className="py-10 text-center text-slate-500">
+                  No {targetStatus} applicants found for this selection.
                 </td>
               </tr>
             ) : (
-              applications.map((app, index) => {
+              filteredApplications.map((app, index) => {
                 const targetId =
                   app.applicant_id ||
                   app.application_id ||
-                  app.job_applications_id ||
                   app.id;
 
                 return (
                   <tr
-                    key={targetId || index}
+                    key={`${targetId}-${index}`}
                     className="border-b hover:bg-slate-50"
                   >
-                    <td className="px-5 py-4 font-medium text-[#1E3E74]">
+                    <td className={`px-5 py-4 font-medium ${showDisqualified ? "text-red-900" : "text-[#1E3E74]"}`}>
                       {app.vacancy_id}
                     </td>
 
                     <td className="px-5 py-4 font-semibold">
-                      {`${app.last_name}, ${app.first_name}`}
+                      {app.last_name && app.first_name 
+                        ? `${app.last_name}, ${app.first_name}`
+                        : "Unknown Applicant"}
                     </td>
 
                     <td className="px-5 py-4">
-                      {app.position_title}
+                      {app.position_title || "N/A"}
                     </td>
 
                     <td className="px-5 py-4">
-                      {app.date_received}
+                      {app.date_received || "N/A"}
                     </td>
 
                     <td className="px-5 py-4 text-center">
@@ -124,17 +187,20 @@ export default function Qualified() {
                           app.application_status
                         )}`}
                       >
-                        {app.application_status}
+                        {app.application_status || "Pending"}
                       </span>
                     </td>
 
                     <td className="px-5 py-4">
                       <div className="flex justify-center">
                         <button
-                          onClick={() =>
-                            handleViewApplication(targetId)
-                          }
-                          className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+                          type="button"
+                          onClick={() => handleViewApplication(targetId)}
+                          className={`flex items-center gap-2 rounded-lg px-4 py-2 text-white transition-colors ${
+                            showDisqualified 
+                              ? "bg-red-600 hover:bg-red-700" 
+                              : "bg-blue-600 hover:bg-blue-700"
+                          }`}
                         >
                           <Eye size={18} />
                           View

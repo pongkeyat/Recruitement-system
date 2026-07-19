@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   ClipboardList, Hourglass, UserCheck, Trophy, Eye, UserPlus
@@ -19,10 +19,12 @@ export default function AllApplication() {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  // Filter out Qualified and Disqualified
-  const activeApplications = applications.filter(
-    (app) => app.application_status !== "Qualified" && app.application_status !== "Disqualified"
-  );
+  // 🎯 Filter and arrange in LIFO order (Last In, First Out)
+  const activeApplications = useMemo(() => {
+    return applications
+      .filter((app) => app.application_status !== "Qualified" && app.application_status !== "Disqualified")
+      .reverse(); // Reverses array so the newest elements (appended last) display first
+  }, [applications]);
 
   useEffect(() => {
     const fetchData = async () => {

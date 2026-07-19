@@ -16,7 +16,7 @@ import { insertApplicantsCivilServiceEligibility } from "./services/civilService
 export const getFullApplicants = async (req, res) => {
     // Your exact tested database query, with the WHERE clause removed to show all applicants
     const query = `
-        SELECT 
+        SELECT
             -- 1. Job Applications
             job_applications.job_applications_id,
             job_applications.vacancy_id,

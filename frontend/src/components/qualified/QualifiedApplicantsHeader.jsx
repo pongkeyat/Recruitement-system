@@ -16,12 +16,12 @@ export default function QualifiedApplicantsHeader({
             <div className="flex items-center gap-2">
               <Users size={20} className="text-green-600" />
               <h1 className="text-3xl font-bold text-[#1E3A6D]">
-                Qualified Applicants
+                Initial evaluation Results
               </h1>
             </div>
 
             <p className="mt-1 text-gray-500 text-sm">
-              Applicants who passed the initial screening and are eligible for
+              Applicants who passed and Failed the initial screening and are eligible and not for
               HRMPSB assessment
             </p>
           </div>

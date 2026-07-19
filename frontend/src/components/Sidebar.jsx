@@ -78,8 +78,8 @@ export default function SideBar() {
       roles: [ROLES.HRO], 
       items: [
         { label: "Initial Evaluation", to: "/initialScreening", icon: ClipboardCheck },
-        { label: "Qualified", to: "/Qualified", icon: UserRoundCheck },
-        { label: "Disqualified", to: "/Disqualified", icon: UserRoundX },
+        { label: "Initial Evaluation Results", to: "/Qualified", icon: UserRoundCheck },
+    
       ]
     },
     {
@@ -157,7 +157,8 @@ export default function SideBar() {
       </div>
 
       {/* INNER SCROLL AREA */}
-      <div className="flex-1 px-3 py-3 space-y-5 overflow-y-auto custom-scrollbar">
+     {/* INNER SCROLL AREA */}
+<div className="flex-1 px-3 py-3 space-y-5 overflow-y-auto [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-white/10 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-amber-500/40 [scrollbar-width:thin] [scrollbar-color:rgba(255,255,255,0.1)_transparent]">
         <div>
           <Link
             to="/dashboard"

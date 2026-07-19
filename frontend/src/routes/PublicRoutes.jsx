@@ -15,7 +15,6 @@ import ApplicantsInitialScreening from '../pages/ApplicantsInitialScreening';
 import UserManagement from '../pages/Usermanagent';
 import ChangePassword from '../pages/ChangePassword';
 import Qualified from '../pages/Qualified';
-import Disqualified from '../pages/Disqualified';
 import ProtectedRoute from './ProtectedRoutes';
 import { useAuth } from '../context/AuthContext';
 import AssesmentSession from '../pages/AssesmentSession';
@@ -38,10 +37,10 @@ function AppLayout() {
         </div>
 
         {/* Sidebar */}
-        <div className="col-span-2 overflow-hidden">
-          <SideBar />
-        </div>
-
+{/* Sidebar Container with Custom Scrollbar */}
+      <div className="col-span-2 h-[calc(100vh-64px)] overflow-y-auto [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-white/10 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-amber-500/40 [scrollbar-width:thin] [scrollbar-color:rgba(255,255,255,0.1)_transparent]">
+        <SideBar />
+      </div>
         {/* Main Content */}
         <main className="col-span-11 overflow-y-auto p-4">
           <Outlet />
@@ -78,7 +77,6 @@ export default function PublicRoutes() {
         <Route path="/initialScreening/:id" element={<ApplicantsInitialScreening />} />
         <Route path="/usermanagement" element={<UserManagement />} />
         <Route path='/Qualified' element={<Qualified />} />
-        <Route path='/Disqualified' element={<Disqualified />} />
         <Route path='/Assesment' element={<AssesmentSession/>} />
         <Route path='/Interview-date' element={<CalendarParent />} />
         <Route path='/Scoring' element={<Scoring />} />

@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { X, Calendar, MapPin, Users, FileText, CheckCircle2, Plus } from 'lucide-react';
 import { getVacancies } from '../../api/Vacancies'; 
 import { getApplicationsByVacancyId } from '../../api/ApplicationApi';
 
 export default function CreateSessionModal({ showModal, onClose, onSave }) {
   const [vacancies, setVacancies] = useState([]);
-  const [applicants, setApplicants] = useState([]);
+  const [rawApplicants, setRawApplicants] = useState([]); // Store raw data here
   const [loadingApplicants, setLoadingApplicants] = useState(false);
   const [selectAll, setSelectAll] = useState(false);
   const [currentPanelist, setCurrentPanelist] = useState('');
@@ -47,7 +47,7 @@ export default function CreateSessionModal({ showModal, onClose, onSave }) {
     const vacancyId = formData.vacancy_id;
 
     if (!vacancyId) {
-      setApplicants([]);
+      setRawApplicants([]);
       setSelectAll(false);
       setFormData(prev => prev.job_applications_id ? { ...prev, job_applications_id: '' } : prev);
       return;
@@ -59,18 +59,10 @@ export default function CreateSessionModal({ showModal, onClose, onSave }) {
         const data = await getApplicationsByVacancyId(vacancyId);
         if (!mounted) return;
         
-        const rawApplicants = Array.isArray(data) ? data : [];
-        
-        // 🎯 FIX: Filter only qualified applicants
-        const qualifiedApplicants = rawApplicants.filter((app) => {
-          const status = (app.application_status || app.status || '').toLowerCase();
-          return status === 'qualified' || status === 'initial_screening_qualified';
-        });
-
-        setApplicants(qualifiedApplicants);
+        setRawApplicants(Array.isArray(data) ? data : []);
       } catch (err) {
         console.error('Could not load applicants for vacancy', vacancyId, err);
-        if (mounted) setApplicants([]);
+        if (mounted) setRawApplicants([]);
       } finally {
         if (mounted) setLoadingApplicants(false);
       }
@@ -83,13 +75,43 @@ export default function CreateSessionModal({ showModal, onClose, onSave }) {
     return () => { mounted = false; };
   }, [formData.vacancy_id]);
 
+  // 🎯 useMemo handles filtering and normalizes the ambiguous ID field once
+// 🎯 useMemo handles filtering, normalizes the ID, and removes duplicate entries
+const qualifiedApplicants = useMemo(() => {
+  const seenIds = new Set();
+  const seenNames = new Set();
+
+  return rawApplicants
+    .filter((app) => {
+      // 1. Maintain your status qualification filter
+      const status = (app.application_status || app.status || '').toLowerCase();
+      return status === 'qualified' || status === 'initial_screening_qualified';
+    })
+    .map((app) => ({
+      ...app,
+      id: app.job_application_id || app.job_applications_id // Normalized fallback ID
+    }))
+    .filter((app) => {
+      // 2. De-duplicate: Ensure both the ID and the Name are entirely unique in the list
+      const nameKey = (app.candidate_name || '').trim().toLowerCase();
+      
+      if (!app.id || seenIds.has(app.id) || (nameKey && seenNames.has(nameKey))) {
+        return false; // Skip if we have already encountered this ID or name
+      }
+      
+      seenIds.add(app.id);
+      if (nameKey) seenNames.add(nameKey);
+      return true;
+    });
+}, [rawApplicants]);
+
   // Handle the "Select All Applicants" Toggle Logic
   const handleToggleAll = (e) => {
     const checked = e.target.checked;
     setSelectAll(checked);
     
-    if (checked && applicants.length > 0) {
-      const allIds = applicants.map(app => app.job_application_id || app.job_applications_id);
+    if (checked && qualifiedApplicants.length > 0) {
+      const allIds = qualifiedApplicants.map(app => app.id);
       setFormData(prev => ({ ...prev, job_applications_id: allIds }));
       if (errors.job_applications_id) setErrors(prev => ({ ...prev, job_applications_id: '' }));
     } else {
@@ -146,13 +168,9 @@ export default function CreateSessionModal({ showModal, onClose, onSave }) {
     }
 
     try {
-      // Await the save operation from the parent component
       await onSave(formData);
-      
-      // If successful: Show success alert
       alert('✅ Assessment session created successfully!');
       
-      // Reset state values
       setFormData({
         vacancy_id: '',
         job_applications_id: '',
@@ -214,7 +232,7 @@ export default function CreateSessionModal({ showModal, onClose, onSave }) {
               <label className="text-xs font-bold text-slate-600 uppercase tracking-wide">Select Candidate</label>
               
               {/* Select All Toggle Feature */}
-              {formData.vacancy_id && applicants.length > 0 && (
+              {formData.vacancy_id && qualifiedApplicants.length > 0 && (
                 <label className="inline-flex items-center gap-1.5 text-xs text-slate-700 font-medium cursor-pointer">
                   <input 
                     type="checkbox" 
@@ -222,7 +240,7 @@ export default function CreateSessionModal({ showModal, onClose, onSave }) {
                     onChange={handleToggleAll}
                     className="rounded border-slate-300 text-blue-600 focus:ring-blue-500 w-3.5 h-3.5"
                   />
-                  <span>Select All Applicants ({applicants.length})</span>
+                  <span>Select All Applicants ({qualifiedApplicants.length})</span>
                 </label>
               )}
             </div>
@@ -241,16 +259,16 @@ export default function CreateSessionModal({ showModal, onClose, onSave }) {
                 {loadingApplicants 
                   ? 'Downloading candidate list...' 
                   : selectAll 
-                    ? `✓ All ${applicants.length} candidates selected` 
+                    ? `✓ All ${qualifiedApplicants.length} candidates selected` 
                     : !formData.vacancy_id 
                       ? '-- Select a vacancy first --' 
-                      : applicants.length === 0 
+                      : qualifiedApplicants.length === 0 
                         ? '-- No qualified candidates found --'
                         : '-- Choose Applicant --'}
               </option>
-              {!selectAll && applicants.map((app) => (
-                <option key={app.job_application_id || app.job_applications_id} value={app.job_application_id || app.job_applications_id}>
-                  {app.candidate_name || `Applicant ID: ${app.job_application_id || app.job_applications_id}`}
+              {!selectAll && qualifiedApplicants.map((app) => (
+                <option key={app.id} value={app.id}>
+                  {app.candidate_name || `Applicant ID: ${app.id}`}
                 </option>
               ))}
             </select>

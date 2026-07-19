@@ -3,7 +3,8 @@ import axios from 'axios';
 const POST_APPLICATIONS = import.meta.env.VITE_APPLICATIONS_POST;
 const GET_APPLICATIONS = import.meta.env.VITE_APPLICATIONS_GET;
 const GET_APPLICATIONS_BY_ID = import.meta.env.VITE_APPLICATIONS_GET_BY_ID;
-const VITE_APPLICATIONS_QUALIFICATIONS = import.meta.env.VITE_APPLICATIONS_QUALIFICATIONS;
+const POST_APPLICANT_QUALIFICATIONS = import.meta.env.VITE_APPLICATIONS_QUALIFICATIONS;
+
 
 export const postApplications = async (application_form) => {
     const res = await axios.post(POST_APPLICATIONS, application_form);
@@ -65,7 +66,7 @@ export const getApplicationsByVacancyId = async (vacancyId) => {
 };
 
 
-const POST_APPLICANT_QUALIFICATIONS = import.meta.env.VITE_APPLICATIONS_QUALIFICATIONS;
+
 
 export const postApplicantQualifications = async (qualificationsData) => {
     try {

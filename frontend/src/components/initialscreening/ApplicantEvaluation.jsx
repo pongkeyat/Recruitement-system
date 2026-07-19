@@ -17,21 +17,26 @@ import { useAuth } from "../../context/AuthContext";
 // Reusable section header — matches the blue header style used across
 // the rest of the system (numbered badge + icon + title).
 const SectionHeader = ({ number, title, icon: Icon }) => (
-  <div className="flex items-center gap-3 rounded-t-xl bg-[#1e3a8a] px-5 py-4 text-white">
-    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white text-sm font-bold text-[#1e3a8a]">
+  <div className="flex items-center gap-2 rounded-t-lg bg-[#1e3a8a] px-4 py-3 text-white">
+    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-white text-xs font-bold text-[#1e3a8a]">
       {number}
     </span>
-    {Icon && <Icon className="h-5 w-5 shrink-0" />}
-    <h2 className="text-base font-semibold tracking-wide">{title}</h2>
+
+    {Icon && <Icon className="h-4 w-4 shrink-0" />}
+
+    <h2 className="text-sm font-semibold">{title}</h2>
   </div>
 );
 
 // Reusable card wrapper so every section (including the ones rendered by
 // the child *Card components) shares the same border/shadow/radius.
 const SectionCard = ({ number, title, icon, children }) => (
-  <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+  <div className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm">
     <SectionHeader number={number} title={title} icon={icon} />
-    <div className="p-6">{children}</div>
+
+    <div className="p-4">
+      {children}
+    </div>
   </div>
 );
 
@@ -82,15 +87,31 @@ export default function ApplicantEvaluation({ applicant }) {
   });
 
   const [generalRemarks, setGeneralRemarks] = useState("");
-  const [overallResult, setOverallResult] = useState("Disqualified");
+  const [overallResult, setOverallResult] = useState("Pending");
 
   useEffect(() => {
-    const passed =
+    // 1. If any single sub-card status is still PENDING, the overall status is "Pending"
+    if (
+      educationStatus === "PENDING" ||
+      trainingStatus === "PENDING" ||
+      experienceStatus === "PENDING" ||
+      eligibilityStatus === "PENDING"
+    ) {
+      setOverallResult("Pending");
+    } 
+    // 2. If all sub-cards are explicitly PASS, the overall status is "Qualified"
+    else if (
       educationStatus === "PASS" &&
       trainingStatus === "PASS" &&
       experienceStatus === "PASS" &&
-      eligibilityStatus === "PASS";
-    setOverallResult(passed ? "Qualified" : "Disqualified");
+      eligibilityStatus === "PASS"
+    ) {
+      setOverallResult("Qualified");
+    } 
+    // 3. Otherwise, if there are no PENDING values but at least one FAILED value, it is "Disqualified"
+    else {
+      setOverallResult("Disqualified");
+    }
   }, [educationStatus, trainingStatus, experienceStatus, eligibilityStatus]);
 
   if (!applicant) {
@@ -101,28 +122,49 @@ export default function ApplicantEvaluation({ applicant }) {
     );
   }
 
+  // Extracted applicant identifier matching database specifications
   const applicantId = applicant.applicant_id || applicant.id;
-  const jobApplicationId =
-    applicant.job_applications_id || applicant.job_application_id;
   const screenedBy = user?.email || user?.user?.email;
 
   const handleSubmitEvaluation = async (e) => {
     e.preventDefault();
-    if (!applicantId || !jobApplicationId) {
-      return alert("Applicant information is incomplete.");
+
+    // Check for essential identifier
+    if (!applicantId) {
+      console.warn("⚠️ Evaluation Submission Denied: Missing vital structural identifier.", {
+        applicantPayloadReceived: applicant,
+        calculatedApplicantId: applicantId,
+      });
+      return alert("Applicant ID is missing.");
     }
+    
+    // Check for unresolved status values
+    if (overallResult === "Pending") {
+      console.warn("⚠️ Evaluation Submission Denied: Status tracking metrics still unresolved.", {
+        educationStatus,
+        trainingStatus,
+        experienceStatus,
+        eligibilityStatus,
+        overallResult,
+      });
+      return alert("Cannot submit screening while sections are still pending.");
+    }
+
     try {
       setSubmitting(true);
+      
+      // Flattened payload design matching backend expectations for req.body directly
       await postApplicantQualifications({
         applicant_id: applicantId,
-        education: [education],
-        training: [training],
-        experience: [experience],
-        eligibility: [eligibility],
+        ...education,
+        ...training,
+        ...experience,
+        ...eligibility,
       });
+
+      // Updated tracking request payload containing only applicant_id context variables
       await postScreening({
         applicant_id: applicantId,
-        job_applications_id: jobApplicationId,
         education_passed: educationStatus === "PASS",
         education_remarks: educationNote,
         training_passed: trainingStatus === "PASS",
@@ -135,9 +177,10 @@ export default function ApplicantEvaluation({ applicant }) {
         general_remarks: generalRemarks,
         screened_by: screenedBy,
       });
+
       alert("Screening completed successfully.");
     } catch (err) {
-      console.error(err);
+      console.error("Submission error details:", err);
       alert(err.response?.data?.error || "Unable to submit evaluation.");
     } finally {
       setSubmitting(false);
@@ -146,7 +189,7 @@ export default function ApplicantEvaluation({ applicant }) {
 
   return (
     <form onSubmit={handleSubmitEvaluation} className="space-y-6">
-      <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
         {/* Education */}
         <SectionCard number="1" title="Education" icon={GraduationCap}>
           <EducationCard
@@ -228,6 +271,8 @@ export default function ApplicantEvaluation({ applicant }) {
               className={`rounded-full px-4 py-2 text-sm font-bold ${
                 overallResult === "Qualified"
                   ? "bg-emerald-100 text-emerald-700"
+                  : overallResult === "Pending"
+                  ? "bg-yellow-100 text-yellow-700"
                   : "bg-red-100 text-red-700"
               }`}
             >
@@ -240,9 +285,9 @@ export default function ApplicantEvaluation({ applicant }) {
       <div className="flex justify-end border-t border-gray-200 pt-6">
         <button
           type="submit"
-          disabled={submitting || authLoading}
+          disabled={submitting || authLoading || overallResult === "Pending"}
           className={`rounded-lg px-8 py-3 text-sm font-medium text-white shadow-sm transition ${
-            submitting || authLoading
+            submitting || authLoading || overallResult === "Pending"
               ? "cursor-not-allowed bg-gray-400"
               : "bg-[#1e3a8a] hover:bg-[#1b3475]"
           }`}
